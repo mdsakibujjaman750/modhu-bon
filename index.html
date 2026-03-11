@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>মধুবন — বিশুদ্ধ মধুর দোকান</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#D4821A;--amber-d:#A85C0A;--amber-l:#F5C842;
+  --cream:#FDF6E3;--brown:#3B1F0A;--brown-l:#6B3A1F;
+  --green:#2D5A27;--green-l:#4A8C3F;--white:#FFFDF7;
+  --sh:rgba(59,31,10,0.14);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Hind Siliguri',sans-serif;background:var(--cream);color:var(--brown);overflow-x:hidden}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:300;background:rgba(253,246,227,0.97);backdrop-filter:blur(14px);border-bottom:2px solid var(--amber-l);display:flex;align-items:center;justify-content:space-between;padding:.7rem 4%;animation:slideDown .6s ease both}
+@keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--amber-d);display:flex;align-items:center;gap:.4rem;text-decoration:none}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--brown);font-weight:500;font-size:.93rem;transition:color .3s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:2px;background:var(--amber);transition:width .3s}
+.nav-links a:hover::after{width:100%}
+.nav-links a:hover{color:var(--amber)}
+.cart-pill{background:var(--amber);color:white;border:none;padding:.45rem 1.1rem;border-radius:30px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:.4rem;transition:all .3s}
+.cart-pill:hover{background:var(--amber-d);transform:scale(1.06)}
+.cart-badge{background:var(--green);color:white;font-size:.65rem;font-weight:800;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+.cart-badge.pop{animation:badgePop .45s cubic-bezier(.68,-.55,.27,1.55)}
+@keyframes badgePop{0%{transform:scale(1)}50%{transform:scale(1.8)}100%{transform:scale(1)}}
+/* WA FLOAT */
+.wa-float{position:fixed;bottom:25px;right:25px;z-index:400;background:#25D366;color:white;width:58px;height:58px;border-radius:50%;font-size:1.7rem;display:flex;align-items:center;justify-content:center;transition:all .3s;animation:waPulse 2.5s infinite;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,.5)}
+.wa-float:hover{transform:scale(1.12)}
+@keyframes waPulse{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,.5)}50%{box-shadow:0 4px 38px rgba(37,211,102,.85)}}
+/* HERO */
+.hero{min-height:100vh;background:linear-gradient(135deg,#FDF6E3 0%,#FDE9A0 55%,#F5C842 100%);display:flex;align-items:center;padding:7rem 4% 4rem;position:relative;overflow:hidden}
+.hero::after{content:'🍯';position:absolute;right:3%;top:50%;transform:translateY(-50%);font-size:18rem;opacity:.1;animation:floatHero 4s ease-in-out infinite;pointer-events:none}
+@keyframes floatHero{0%,100%{transform:translateY(-50%) rotate(-5deg)}50%{transform:translateY(-56%) rotate(5deg)}}
+.hero-inner{max-width:580px;z-index:1}
+.hero-tag{display:inline-block;background:var(--amber-d);color:white;font-size:.78rem;font-weight:700;padding:.28rem .95rem;border-radius:20px;margin-bottom:.9rem;letter-spacing:1px;animation:fadeUp .7s ease both}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,4.5vw,3.6rem);line-height:1.2;color:var(--brown);margin-bottom:1rem;animation:fadeUp .7s ease .12s both}
+.hero h1 em{color:var(--amber);font-style:italic}
+.hero p{font-size:1.05rem;color:var(--brown-l);line-height:1.85;margin-bottom:1.8rem;animation:fadeUp .7s ease .24s both}
+.hero-btns{display:flex;gap:.9rem;flex-wrap:wrap;margin-bottom:1.8rem;animation:fadeUp .7s ease .36s both}
+.btn-primary{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border:none;padding:.85rem 2rem;border-radius:50px;font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;box-shadow:0 4px 20px rgba(212,130,26,.4);transition:all .3s}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(212,130,26,.5)}
+.btn-wa{background:#25D366;color:white;border:none;padding:.85rem 2rem;border-radius:50px;font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;box-shadow:0 4px 20px rgba(37,211,102,.35);transition:all .3s}
+.btn-wa:hover{transform:translateY(-3px);background:#128C7E}
+.hero-stats{display:flex;gap:2rem;animation:fadeUp .7s ease .48s both}
+.stat .n{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--amber-d)}
+.stat .l{font-size:.8rem;color:var(--brown-l)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+/* SECTIONS */
+section{padding:4.5rem 4%}
+.sec-title{text-align:center;margin-bottom:2.8rem}
+.sec-title h2{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3vw,2.5rem);color:var(--brown);margin-bottom:.7rem}
+.sec-title p{font-size:.98rem;color:var(--brown-l);max-width:480px;margin:auto}
+.divider{width:50px;height:4px;background:linear-gradient(90deg,var(--amber),var(--amber-l));margin:.8rem auto;border-radius:2px}
+/* CATS */
+.cats{background:var(--white)}
+.cat-row{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+.cat-btn{background:var(--cream);border:2px solid transparent;border-radius:30px;padding:.5rem 1.2rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:600;color:var(--brown);transition:all .25s}
+.cat-btn:hover,.cat-btn.active{border-color:var(--amber);background:linear-gradient(135deg,#FFF8E1,#FDE9A0);transform:translateY(-2px);box-shadow:0 4px 15px var(--sh);color:var(--amber-d)}
+/* PRODUCTS */
+.products-sec{background:var(--cream)}
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:1.2rem}
+.prod-card{background:var(--white);border-radius:18px;box-shadow:0 3px 15px var(--sh);overflow:hidden;transition:all .35s;position:relative;display:flex;flex-direction:column;animation:cardIn .5s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.prod-card:hover{transform:translateY(-7px);box-shadow:0 14px 38px rgba(59,31,10,.2)}
+.prod-badge{position:absolute;top:10px;left:10px;background:var(--amber-d);color:white;font-size:.65rem;font-weight:700;padding:.22rem .65rem;border-radius:20px;z-index:2}
+.prod-badge.sb{background:var(--green)}
+.prod-img{height:125px;display:flex;align-items:center;justify-content:center;font-size:5rem;overflow:hidden;transition:transform .3s}
+.prod-card:hover .prod-img{transform:scale(1.06)}
+.prod-body{padding:.95rem;flex:1;display:flex;flex-direction:column}
+.prod-body h3{font-size:.97rem;font-weight:700;color:var(--brown);margin-bottom:.28rem}
+.prod-body p{font-size:.78rem;color:var(--brown-l);line-height:1.55;margin-bottom:.7rem;flex:1}
+.prod-bottom{display:flex;align-items:center;justify-content:space-between;gap:.4rem;flex-wrap:wrap}
+.prod-price{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--amber-d)}
+.prod-price span{font-size:.7rem;font-family:'Hind Siliguri',sans-serif;color:var(--brown-l);font-weight:400}
+.prod-actions{display:flex;gap:.35rem}
+.btn-cart{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border:none;padding:.4rem .8rem;border-radius:9px;font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .25s}
+.btn-cart:hover{filter:brightness(1.12);transform:scale(1.06)}
+.btn-order-p{background:transparent;color:var(--green);border:2px solid var(--green);padding:.4rem .8rem;border-radius:9px;font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .25s}
+.btn-order-p:hover{background:var(--green);color:white}
+/* SB */
+.sb-sec{background:linear-gradient(135deg,#1A3A15,#2D5A27,#3A7A30);color:white;position:relative;overflow:hidden}
+.sb-sec::before{content:'🌿';position:absolute;top:-30px;right:2%;font-size:18rem;opacity:.06;pointer-events:none}
+.sb-sec .sec-title h2{color:white}
+.sb-sec .sec-title p{color:rgba(255,255,255,.8)}
+.sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.sb-card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:1.2rem;backdrop-filter:blur(8px);transition:all .3s;display:flex;flex-direction:column}
+.sb-card:hover{background:rgba(255,255,255,.18);transform:translateY(-5px)}
+.sb-card .icon{font-size:2.2rem;margin-bottom:.6rem}
+.sb-card h4{font-size:.95rem;font-weight:700;color:var(--amber-l);margin-bottom:.35rem}
+.sb-card p{font-size:.78rem;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:.8rem;flex:1}
+.sb-card .sb-price{font-size:1.1rem;font-weight:700;color:white;margin-bottom:.7rem}
+.sb-btns{display:flex;gap:.4rem}
+.sb-btns .btn-cart{flex:1;font-size:.74rem;padding:.4rem .5rem}
+.sb-btns .btn-order-p{flex:1;border-color:rgba(255,255,255,.5);color:white;font-size:.74rem;padding:.4rem .5rem}
+.sb-btns .btn-order-p:hover{background:rgba(255,255,255,.2);border-color:white}
+/* BENEFITS */
+.benefits-sec{background:var(--white)}
+.ben-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:1.3rem}
+.ben-card{text-align:center;padding:1.6rem 1.2rem;border-radius:18px;background:linear-gradient(135deg,var(--cream),#FDE9A0);transition:all .3s}
+.ben-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px var(--sh)}
+.ben-card .bi{font-size:2.5rem;margin-bottom:.8rem}
+.ben-card h3{font-size:.95rem;font-weight:700;color:var(--brown);margin-bottom:.5rem}
+.ben-card p{font-size:.8rem;color:var(--brown-l);line-height:1.65}
+/* ══════════════════════════════════
+   REVIEWS SECTION — Dynamic + Add Form
+══════════════════════════════════ */
+.reviews-sec{background:var(--cream);overflow:hidden}
+.rev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.4rem;margin-bottom:3rem}
+.rev-card{background:var(--white);border-radius:18px;padding:1.6rem;box-shadow:0 3px 15px var(--sh);border-left:4px solid var(--amber);transition:transform .3s;animation:cardIn .5s ease both}
+.rev-card:hover{transform:translateY(-4px)}
+.stars{color:var(--amber);margin-bottom:.8rem;font-size:1.1rem}
+.rev-card p.rev-text{font-size:1.05rem;color:var(--brown-l);line-height:1.9;font-style:italic;margin-bottom:1rem;font-weight:500}
+.rev-author{display:flex;align-items:center;gap:.7rem}
+.rev-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--amber-d));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0}
+.rev-author h4{font-size:.88rem;font-weight:700;color:var(--brown)}
+.rev-author span{font-size:.75rem;color:var(--brown-l)}
+/* New Review flying animation */
+.rev-card.new-entry{animation:revFlyIn .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes revFlyIn{
+  from{opacity:0;transform:translateY(60px) scale(.85) rotate(-2deg)}
+  60%{transform:translateY(-10px) scale(1.03) rotate(.5deg)}
+  to{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}
+}
+/* ADD REVIEW FORM */
+.add-review-wrap{max-width:620px;margin:0 auto}
+.add-review-toggle{
+  display:flex;align-items:center;justify-content:center;gap:.7rem;
+  width:100%;background:linear-gradient(135deg,var(--amber),var(--amber-d));
+  color:white;border:none;padding:1rem 2rem;border-radius:50px;
+  font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;
+  cursor:pointer;transition:all .35s;box-shadow:0 4px 20px rgba(212,130,26,.4);
+  animation:fadeUp .7s ease .3s both;
+}
+.add-review-toggle:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(212,130,26,.5)}
+.add-review-toggle .toggle-arrow{transition:transform .35s;display:inline-block}
+.add-review-toggle.open .toggle-arrow{transform:rotate(180deg)}
+.add-review-form{
+  background:var(--white);border-radius:22px;padding:0;
+  box-shadow:0 6px 35px var(--sh);
+  max-height:0;overflow:hidden;
+  transition:max-height .6s cubic-bezier(.4,0,.2,1), padding .4s, opacity .4s;
+  opacity:0;
+}
+.add-review-form.open{max-height:600px;padding:2rem;opacity:1}
+.add-review-form h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--brown);margin-bottom:1.3rem;text-align:center}
+.arf-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem}
+.fg{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.8rem}
+.fg label{font-weight:600;font-size:.83rem;color:var(--brown)}
+.fg input,.fg select,.fg textarea{border:2px solid #E8D5B0;border-radius:10px;padding:.62rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;color:var(--brown);background:var(--cream);outline:none;transition:border-color .3s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--amber)}
+.fg textarea{resize:vertical;min-height:80px}
+.star-picker{display:flex;gap:.3rem;margin-top:.3rem}
+.star-picker span{font-size:1.6rem;cursor:pointer;opacity:.35;transition:all .2s;transform:scale(1)}
+.star-picker span.active,.star-picker span:hover{opacity:1;transform:scale(1.2)}
+.submit-rev-btn{width:100%;background:linear-gradient(135deg,var(--green),var(--green-l));color:white;border:none;padding:.9rem;border-radius:12px;font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 4px 18px rgba(45,90,39,.35)}
+.submit-rev-btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
+/* CONTACT */
+.contact-sec{background:linear-gradient(135deg,#FDF6E3,#FDE9A0)}
+.contact-box{max-width:680px;margin:auto;background:var(--white);border-radius:22px;padding:2.2rem;box-shadow:0 6px 35px var(--sh)}
+.contact-box h3{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--brown);margin-bottom:1.5rem;text-align:center}
+.contact-info{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.ci-box{display:flex;align-items:center;gap:.7rem;padding:1rem;background:var(--cream);border-radius:12px;transition:transform .25s}
+.ci-box:hover{transform:scale(1.03)}
+.ci-box .ico{font-size:1.5rem}
+.ci-box h4{font-size:.8rem;color:var(--brown-l);margin-bottom:.15rem}
+.ci-box p{font-size:.92rem;font-weight:700;color:var(--brown)}
+.wa-order-btn{display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;background:#25D366;color:white;border:none;padding:1rem;border-radius:14px;font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .3s;box-shadow:0 4px 20px rgba(37,211,102,.35)}
+.wa-order-btn:hover{background:#128C7E;transform:translateY(-3px)}
+/* FOOTER */
+footer{background:var(--brown);color:rgba(255,255,255,.75);padding:2.5rem 4% 1.5rem}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:2rem;margin-bottom:2rem}
+.foot-brand .logo{color:var(--amber-l);margin-bottom:.8rem;font-size:1.4rem}
+.foot-brand p{font-size:.83rem;line-height:1.7;color:rgba(255,255,255,.6)}
+.foot-col h4{font-size:.93rem;font-weight:700;color:var(--amber-l);margin-bottom:.9rem}
+.foot-col ul{list-style:none}
+.foot-col ul li{margin-bottom:.5rem}
+.foot-col ul a{text-decoration:none;color:rgba(255,255,255,.6);font-size:.83rem;transition:color .3s}
+.foot-col ul a:hover{color:var(--amber-l)}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:1.2rem;text-align:center;font-size:.8rem;color:rgba(255,255,255,.35)}
+/* MODALS */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;align-items:center;justify-content:center;padding:1rem}
+.modal-ov.open{display:flex}
+.order-modal,.cart-modal{background:var(--white);border-radius:22px;padding:2rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:modalIn .35s cubic-bezier(.34,1.56,.64,1)}
+.cart-modal{max-width:430px}
+@keyframes modalIn{from{opacity:0;transform:scale(.86) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem}
+.modal-head h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--brown)}
+.close-x{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--brown-l);line-height:1;transition:all .3s;font-weight:700}
+.close-x:hover{color:var(--amber-d);transform:rotate(90deg)}
+.sel-prod{background:linear-gradient(135deg,#FFF8E1,#FDE9A0);border-radius:12px;padding:.9rem 1rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.8rem}
+.sel-prod .sp-icon{font-size:2rem}
+.sel-prod h4{font-size:.95rem;font-weight:700;color:var(--brown)}
+.sel-prod p{font-size:.82rem;color:var(--amber-d);font-weight:700}
+.form-row2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.submit-btn{width:100%;margin-top:.9rem;background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border:none;padding:.9rem;border-radius:12px;font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 4px 18px rgba(212,130,26,.4)}
+.submit-btn:hover{filter:brightness(1.08);transform:translateY(-2px)}
+/* CART */
+.cart-item{display:flex;align-items:center;gap:.7rem;padding:.8rem 0;border-bottom:1px solid #E8D5B0;animation:fadeUp .3s ease both}
+.ci-icon{font-size:1.8rem;flex-shrink:0}
+.ci-info{flex:1;min-width:0}
+.ci-info h4{font-size:.85rem;font-weight:700;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-info p{font-size:.73rem;color:var(--brown-l)}
+.ci-qty{display:flex;align-items:center;gap:.25rem;flex-shrink:0}
+.qty-btn{background:var(--cream);border:1px solid #E8D5B0;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:.9rem;font-weight:700;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:var(--amber);color:white;border-color:var(--amber)}
+.ci-price{font-weight:700;color:var(--amber-d);font-size:.9rem;flex-shrink:0;min-width:55px;text-align:right}
+.ci-rm{background:none;border:none;cursor:pointer;color:#CC4444;font-size:1rem;transition:transform .2s;flex-shrink:0}
+.ci-rm:hover{transform:scale(1.35) rotate(10deg)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:1.2rem;padding-top:1rem;border-top:2px solid var(--amber-l)}
+.cart-total-row span{font-weight:700;font-size:1rem;color:var(--brown)}
+.tp{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--amber-d)}
+.empty-cart{text-align:center;padding:2rem;color:var(--brown-l)}
+.empty-cart span{display:block;font-size:3rem;margin-bottom:.8rem}
+.checkout-btn{width:100%;margin-top:1rem;background:linear-gradient(135deg,var(--green),var(--green-l));color:white;border:none;padding:.85rem;border-radius:12px;font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s}
+.checkout-btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.cart-summary{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-radius:12px;padding:.9rem 1rem;margin-bottom:1.2rem}
+.cart-summary h4{font-size:.9rem;font-weight:700;color:var(--green);margin-bottom:.5rem}
+.cart-summary-item{display:flex;justify-content:space-between;font-size:.82rem;color:var(--brown-l);padding:.2rem 0}
+.cart-summary-total{display:flex;justify-content:space-between;font-size:.95rem;font-weight:700;color:var(--brown);border-top:1px solid rgba(0,0,0,.1);margin-top:.5rem;padding-top:.5rem}
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;padding:.78rem 1.5rem;border-radius:12px;font-weight:700;font-size:.9rem;color:white;opacity:0;transition:all .4s cubic-bezier(.23,1,.32,1);pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.my-orders-btn{background:transparent;color:var(--brown);border:2px solid var(--amber);padding:.42rem 1rem;border-radius:30px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:.3rem;transition:all .3s}
+.my-orders-btn:hover{background:var(--amber);color:white}
+/* MY ORDERS MODAL */
+.my-orders-modal{background:var(--white);border-radius:22px;padding:2rem;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:modalIn .35s cubic-bezier(.34,1.56,.64,1)}
+.mo-search{width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.65rem 1rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;color:var(--brown);background:var(--cream);outline:none;margin-bottom:1.1rem;transition:border-color .3s}
+.mo-search:focus{border-color:var(--amber)}
+.mo-order-card{background:var(--cream);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.8rem;border-left:4px solid var(--amber);animation:fadeUp .3s ease both;transition:all .3s}
+.mo-order-card:hover{transform:translateX(3px);box-shadow:0 4px 14px var(--sh)}
+.mo-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem}
+.mo-prod{font-size:.96rem;font-weight:700;color:var(--brown);display:flex;align-items:center;gap:.4rem}
+.mo-status{font-size:.72rem;font-weight:700;padding:.2rem .65rem;border-radius:20px}
+.mo-s-new{background:#FFF3E0;color:#E65100}
+.mo-s-confirmed{background:#E3F2FD;color:#1565C0}
+.mo-s-processing{background:#F3E5F5;color:#7B1FA2}
+.mo-s-delivered{background:#E8F5E9;color:#2E7D32}
+.mo-s-cancelled{background:#FFEBEE;color:#C62828}
+.mo-details{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.8rem;color:var(--brown-l)}
+.mo-price{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--amber-d);margin-top:.4rem}
+.mo-empty{text-align:center;padding:2.5rem;color:var(--brown-l)}
+.mo-empty span{display:block;font-size:3rem;margin-bottom:.7rem}
+.mo-hint{font-size:.8rem;color:var(--brown-l);text-align:center;margin-bottom:1rem;padding:.6rem;background:var(--cream);border-radius:8px}
+@media(max-width:700px){.nav-links{display:none}.hero::after{display:none}.foot-grid{grid-template-columns:1fr}.contact-info{grid-template-columns:1fr}.form-row2{grid-template-columns:1fr}.arf-grid{grid-template-columns:1fr}}
+</style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ══ FIREBASE CONFIG — নিজের config এখানে বসান ══
+const firebaseConfig = {
+  apiKey: "AIzaSyD8ixO1HwtDlAkt-zqx23fIU8kUBpFb28I",
+  authDomain: "modhu--bon.firebaseapp.com",
+  databaseURL: "https://modhu--bon-default-rtdb.firebaseio.com",
+  projectId: "modhu--bon",
+  storageBucket: "modhu--bon.firebasestorage.app",
+  messagingSenderId: "942439122447",
+  appId: "1:942439122447:web:677dce98ab39895bf5057a"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._fbDB = db;
+window._fbRef = ref;
+window._fbPush = push;
+window._fbOnValue = onValue;
+window._fbSet = set;
+window._fbGet = get;
+window._firebaseReady = true;
+console.log("Firebase ready");
+</script>
+</head>
+<body>
+
+<nav>
+  <a class="logo" id="dynLogo" href="#">🍯 মধুবন</a>
+  <ul class="nav-links">
+    <li><a href="#products">পণ্য</a></li>
+    <li><a href="#sundorbon">সুন্দরবন</a></li>
+    <li><a href="#benefits">উপকারিতা</a></li>
+    <li><a href="#reviews">মতামত</a></li>
+    <li><a href="#contact">যোগাযোগ</a></li>
+  </ul>
+  <div style="display:flex;gap:.6rem;align-items:center">
+    <button class="my-orders-btn" onclick="openMyOrders()">📋 My Orders</button>
+    <button class="cart-pill" onclick="openCart()">🛒 কার্ট <span class="cart-badge" id="cartBadge">0</span></button>
+  </div>
+</nav>
+
+<a class="wa-float" id="waFloat" href="https://wa.me/8801747401484" target="_blank">💬</a>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag" id="heroTag">🌸 ১০০% বিশুদ্ধ ও প্রাকৃতিক মধু</div>
+    <h1><span id="heroH1a">প্রকৃতির</span> <em id="heroH1b">সেরা মধু</em><br/>আপনার দরজায়</h1>
+    <p id="heroDesc">বিভিন্ন ফুলের বিশুদ্ধ মধু ও সুন্দরবনের দুর্লভ মধু — সরাসরি মৌচাক থেকে আপনার কাছে। কোনো ভেজাল নেই।</p>
+    <div class="hero-btns">
+      <a href="#products" class="btn-primary">🍯 এখনই দেখুন</a>
+      <a class="btn-wa" id="waHeroBtn" href="https://wa.me/8801747401484" target="_blank">💬 WhatsApp অর্ডার</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="n" id="heroStat1n">১২+</div><div class="l" id="heroStat1l">ধরনের মধু</div></div>
+      <div class="stat"><div class="n" id="heroStat2n">১৫০+</div><div class="l" id="heroStat2l">সন্তুষ্ট ক্রেতা</div></div>
+      <div class="stat"><div class="n" id="heroStat3n">১০০%</div><div class="l" id="heroStat3l">বিশুদ্ধ</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cats">
+  <div class="sec-title"><h2>মধুর ধরন বেছে নিন</h2><div class="divider"></div></div>
+  <div class="cat-row">
+    <button class="cat-btn active" onclick="filterProd('all',this)">🌿 সব মধু</button>
+    <button class="cat-btn" onclick="filterProd('ful',this)">🌸 ফুলের মধু</button>
+    <button class="cat-btn" onclick="filterProd('sb',this)">🌳 সুন্দরবনের মধু</button>
+    <button class="cat-btn" onclick="filterProd('mixed',this)">🌺 মিশ্র ফুলের মধু</button>
+    <button class="cat-btn" onclick="filterProd('special',this)">⭐ বিশেষ মধু</button>
+  </div>
+</section>
+
+<section class="products-sec" id="products">
+  <div class="sec-title"><h2>আমাদের পণ্যসমূহ</h2><div class="divider"></div><p>সরাসরি মৌচাক থেকে আপনার কাছে পৌঁছানো বিশুদ্ধ মধু</p></div>
+  <div class="prod-grid" id="prodGrid"></div>
+</section>
+
+<section class="sb-sec" id="sundorbon">
+  <div class="sec-title"><h2>🌳 সুন্দরবনের বিশেষ মধু</h2><div class="divider"></div><p>পৃথিবীর বৃহত্তম ম্যানগ্রোভ বনের দুর্লভ প্রাকৃতিক সম্পদ</p></div>
+  <div class="sb-grid" id="sbGrid"></div>
+</section>
+
+<section class="benefits-sec" id="benefits">
+  <div class="sec-title"><h2>মধুর অসাধারণ উপকারিতা</h2><div class="divider"></div></div>
+  <div class="ben-grid">
+    <div class="ben-card"><div class="bi">🛡️</div><h3>রোগ প্রতিরোধ</h3><p>অ্যান্টিঅক্সিডেন্ট শরীরের রোগ প্রতিরোধ ব্যবস্থাকে শক্তিশালী করে।</p></div>
+    <div class="ben-card"><div class="bi">🌙</div><h3>ভালো ঘুম</h3><p>রাতে মধু খেলে মস্তিষ্কে সেরোটোনিন তৈরি হয়, ঘুম ভালো হয়।</p></div>
+    <div class="ben-card"><div class="bi">💪</div><h3>শক্তি বৃদ্ধি</h3><p>প্রাকৃতিক শর্করা দ্রুত শক্তি সরবরাহ করে, ক্লান্তি দূর করে।</p></div>
+    <div class="ben-card"><div class="bi">🤒</div><h3>সর্দি-কাশি</h3><p>গলার ব্যথা ও কাশি কমাতে অত্যন্ত কার্যকর প্রাকৃতিক ওষুধ।</p></div>
+    <div class="ben-card"><div class="bi">✨</div><h3>ত্বকের যত্ন</h3><p>অ্যান্টিব্যাকটেরিয়াল গুণ ত্বক পরিষ্কার ও উজ্জ্বল রাখে।</p></div>
+    <div class="ben-card"><div class="bi">🫀</div><h3>হৃদপিণ্ডের সুস্থতা</h3><p>রক্তচাপ নিয়ন্ত্রণে থাকে ও হৃদরোগের ঝুঁকি কমে।</p></div>
+  </div>
+</section>
+
+<!-- ════════════ REVIEWS ════════════ -->
+<section class="reviews-sec" id="reviews">
+  <div class="sec-title"><h2>ক্রেতাদের মতামত</h2><div class="divider"></div><p>আমাদের সন্তুষ্ট ক্রেতারা কী বলছেন</p></div>
+  <div class="rev-grid" id="revGrid"></div>
+
+  <!-- Add Review -->
+  <div class="add-review-wrap">
+    <button class="add-review-toggle" id="revToggleBtn" onclick="toggleRevForm()">
+      ✍️ আপনার মতামত দিন <span class="toggle-arrow">▼</span>
+    </button>
+    <div class="add-review-form" id="revForm">
+      <h3>🍯 আপনার অভিজ্ঞতা শেয়ার করুন</h3>
+      <div class="arf-grid">
+        <div class="fg"><label>আপনার নাম ★</label><input type="text" id="rvName" placeholder="আপনার নাম"/></div>
+        <div class="fg"><label>এলাকা</label><input type="text" id="rvLoc" placeholder="ঢাকা, চট্টগ্রাম..."/></div>
+      </div>
+      <div class="fg">
+        <label>রেটিং ★</label>
+        <div class="star-picker" id="starPicker">
+          <span onclick="setStars(1)">★</span>
+          <span onclick="setStars(2)">★</span>
+          <span onclick="setStars(3)">★</span>
+          <span onclick="setStars(4)">★</span>
+          <span onclick="setStars(5)" class="active">★</span>
+        </div>
+      </div>
+      <div class="fg"><label>মতামত ★</label><textarea id="rvText" placeholder="মধু সম্পর্কে আপনার অভিজ্ঞতা লিখুন..."></textarea></div>
+      <button class="submit-rev-btn" onclick="submitReview()">🚀 মতামত জমা দিন</button>
+    </div>
+  </div>
+</section>
+
+<section class="contact-sec" id="contact">
+  <div class="sec-title"><h2>যোগাযোগ করুন</h2><div class="divider"></div></div>
+  <div class="contact-box">
+    <h3>📞 আমাদের সাথে যোগাযোগ</h3>
+    <div class="contact-info">
+      <div class="ci-box"><span class="ico">📱</span><div><h4>মোবাইল / WhatsApp</h4><p id="dynPhone">+8809678642903</p></div></div>
+      <div class="ci-box"><span class="ico">📍</span><div><h4>ঠিকানা</h4><p id="dynAddress">সাতক্ষীরা, বাংলাদেশ</p></div></div>
+      <div class="ci-box"><span class="ico">⏰</span><div><h4>সেবার সময়</h4><p id="dynHours">সকাল ৯টা – রাত ১০টা</p></div></div>
+      <div class="ci-box"><span class="ico">🚚</span><div><h4>ডেলিভারি</h4><p>সারাদেশে হোম ডেলিভারি</p></div></div>
+    </div>
+    <a id="waContactBtn" href="https://wa.me/8801747401484" target="_blank" class="wa-order-btn">💬 WhatsApp এ এখনই অর্ডার করুন</a>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <div class="logo" id="dynFooterLogo">🍯 মধুবন</div>
+      <p>ভেজালমুক্ত, প্রাকৃতিক মধুর জন্য বিশ্বাস করুন মধুবনকে।</p>
+      <p style="margin-top:.7rem;font-size:.8rem;color:rgba(255,255,255,.45)" id="dynFooterLine">📍 সাতক্ষীরা, বাংলাদেশ | 📱 +8809678642903</p>
+    </div>
+    <div class="foot-col"><h4>পণ্যসমূহ</h4><ul><li><a href="#">সরিষা ফুলের মধু</a></li><li><a href="#">কালিজিরা মধু</a></li><li><a href="#">সুন্দরবনের মধু</a></li><li><a href="#">মিশ্র ফুলের মধু</a></li></ul></div>
+    <div class="foot-col"><h4>সহায়তা</h4><ul><li><a href="#">ডেলিভারি তথ্য</a></li><li><a href="#">রিটার্ন পলিসি</a></li><li><a href="#contact">যোগাযোগ</a></li></ul></div>
+  </div>
+  <div class="foot-bottom" id="dynCopyright">© ২০২৫ মধুবন | সাতক্ষীরা, বাংলাদেশ | সর্বস্বত্ব সংরক্ষিত</div>
+</footer>
+
+<!-- MY ORDERS MODAL -->
+<div class="modal-ov" id="myOrdersModal">
+  <div class="my-orders-modal">
+    <div class="modal-head"><h3>📋 আমার অর্ডার</h3><button class="close-x" onclick="closeMyOrders()">✕</button></div>
+    <p class="mo-hint">📱 আপনার মোবাইল নম্বর দিয়ে অর্ডার খুঁজুন</p>
+    <input type="tel" class="mo-search" id="moSearch" placeholder="01XXXXXXXXX — মোবাইল নম্বর দিন" oninput="searchMyOrders()" />
+    <div id="myOrdersList"><div class="mo-empty"><span>🔍</span>মোবাইল নম্বর দিয়ে অর্ডার খুঁজুন</div></div>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-ov" id="orderModal">
+  <div class="order-modal">
+    <div class="modal-head"><h3>🛒 অর্ডার ফর্ম</h3><button class="close-x" onclick="closeOrder()">✕</button></div>
+    <div class="sel-prod"><span class="sp-icon" id="spIcon">🍯</span><div><h4 id="spName"></h4><p id="spPrice"></p></div></div>
+    <div id="cartSummaryBox"></div>
+    <div class="form-row2">
+      <div class="fg"><label>আপনার নাম ★</label><input type="text" id="oName" placeholder="পূর্ণ নাম"/></div>
+      <div class="fg"><label>মোবাইল নম্বর ★</label><input type="tel" id="oPhone" placeholder="01XXXXXXXXX"/></div>
+    </div>
+    <div class="form-row2">
+      <div class="fg" id="qtyBox"><label>পরিমাণ</label><select id="oQty"><option value="500g">৫০০ গ্রাম</option><option value="1kg" selected>১ কেজি</option><option value="2kg">২ কেজি</option><option value="5kg">৫ কেজি</option></select></div>
+      <div class="fg"><label>পেমেন্ট পদ্ধতি</label><select id="oPayment"><option>ক্যাশ অন ডেলিভারি</option><option>বিকাশ</option><option>নগদ</option><option>রকেট</option></select></div>
+    </div>
+    <div class="fg"><label>ডেলিভারি ঠিকানা ★</label><textarea id="oAddress" placeholder="সম্পূর্ণ ঠিকানা (বাড়ি, রাস্তা, থানা, জেলা)"></textarea></div>
+    <div class="fg"><label>বিশেষ নির্দেশনা</label><input type="text" id="oNote" placeholder="কোনো বার্তা থাকলে লিখুন..."/></div>
+    <button class="submit-btn" onclick="submitOrder()">🚀 অর্ডার নিশ্চিত করুন</button>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div class="modal-ov" id="cartModal">
+  <div class="cart-modal">
+    <div class="modal-head"><h3>🛒 আপনার কার্ট</h3><button class="close-x" onclick="closeCart()">✕</button></div>
+    <div id="cartItems"></div>
+    <div id="cartFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// VERSION RESET — পুরনো data clear করে
+// ══════════════════════════════════════
+(function(){
+  if(localStorage.getItem('modhu_ver')!=='3.0'){
+    localStorage.removeItem('modhu_products');
+    localStorage.removeItem('modhu_sb_products');
+    localStorage.removeItem('modhu_reviews');
+    localStorage.setItem('modhu_ver','3.0');
+  }
+})();
+// ══════════════════════════════════════
+// DEFAULTS
+// ══════════════════════════════════════
+var DEFAULTS=[
+  {id:1,name:'সরিষা ফুলের মধু',desc:'হলদে, সুগন্ধি। ঠান্ডায় জমে — বিশুদ্ধতার প্রমাণ।',price:550,icon:'🌼',badge:'জনপ্রিয়',btype:'',cat:'ful',bg:'#FFF8E1,#FFF3CD'},
+  {id:2,name:'কালিজিরা ফুলের মধু',desc:'রোগ প্রতিরোধে অতুলনীয়। প্রতিদিন ১ চামচ।',price:650,icon:'🌿',badge:'সেরা বিক্রেতা',btype:'',cat:'ful',bg:'#F1F8E9,#DCEDC8'},
+  {id:3,name:'লিচু ফুলের মধু',desc:'হালকা মিষ্টি ও সুগন্ধি। সোনালি রঙের বিশেষ মধু।',price:600,icon:'🍈',badge:'মৌসুমি',btype:'',cat:'special',bg:'#FCE4EC,#F8BBD0'},
+  {id:4,name:'সুন্দরবন প্রিমিয়াম',desc:'গাঢ় রঙ, শক্তিশালী স্বাদ। অ্যান্টিব্যাকটেরিয়াল।',price:850,icon:'🌳',badge:'সুন্দরবন',btype:'sb',cat:'sb',bg:'#E8F5E9,#C8E6C9'},
+  {id:5,name:'সূর্যমুখী ফুলের মধু',desc:'উজ্জ্বল সোনালি রঙ। ভিটামিন সমৃদ্ধ।',price:580,icon:'🌻',badge:'',btype:'',cat:'ful',bg:'#FFFDE7,#FFF9C4'},
+  {id:6,name:'মিশ্র ফুলের মধু',desc:'নানা ফুলের মিশ্রণ। সুষম পুষ্টিগুণ সম্পন্ন।',price:500,icon:'🌺',badge:'সাশ্রয়ী',btype:'',cat:'mixed',bg:'#FCE4EC,#F3E5F5'},
+  {id:7,name:'গেওয়া ফুলের মধু',desc:'সুন্দরবনের গেওয়া ফুল থেকে। হালকা রঙ।',price:750,icon:'🌾',badge:'সুন্দরবন',btype:'sb',cat:'sb',bg:'#E8F5E9,#C8E6C9'},
+  {id:8,name:'কমলা ফুলের মধু',desc:'কমলা বাগান থেকে সংগৃহীত। হজমশক্তিতে কার্যকর।',price:620,icon:'🍊',badge:'',btype:'',cat:'special',bg:'#FFF3E0,#FFE0B2'}
+];
+var SB_DEFAULTS=[
+  {id:'sb1',name:'সুন্দরবন প্রিমিয়াম',desc:'খাঁটি সুন্দরী ফুলের মধু। গাঢ় রঙ।',price:850,icon:'🍯'},
+  {id:'sb2',name:'গেওয়া ফুলের মধু',desc:'হালকা রঙ, মৃদু মিষ্টি গন্ধ।',price:750,icon:'🌿'},
+  {id:'sb3',name:'বাইন ফুলের মধু',desc:'বিরল প্রজাতির ফুল থেকে সংগৃহীত।',price:900,icon:'🌸'},
+  {id:'sb4',name:'সুন্দরবন গিফট প্যাক',desc:'৩ ধরনের মধু মিলিয়ে বিশেষ উপহার প্যাকেজ।',price:2100,icon:'🎁'}
+];
+var DEFAULT_REVIEWS=[
+  {name:'রাহেলা বেগম',loc:'ঢাকা',stars:5,text:'সুন্দরবনের মধু সত্যিই অসাধারণ! পরিবার খুব পছন্দ করেছে।',ts:0},
+  {name:'কামরুল ইসলাম',loc:'চট্টগ্রাম',stars:5,text:'কালিজিরার মধু নিয়েছিলাম। দ্রুত ডেলিভারি, অসাধারণ মান।',ts:1},
+  {name:'সুমাইয়া আক্তার',loc:'সিলেট',stars:5,text:'গিফট প্যাক দেখে সবাই মুগ্ধ। সুন্দর প্যাকেজিং।',ts:2}
+];
+
+// ══════════════════════════════════════
+// STORAGE HELPERS
+// ══════════════════════════════════════
+function getProducts(){try{var s=localStorage.getItem('modhu_products');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}}
+function getSBProducts(){try{var s=localStorage.getItem('modhu_sb_products');return s?JSON.parse(s):SB_DEFAULTS;}catch(e){return SB_DEFAULTS;}}
+function getReviews(){try{var s=localStorage.getItem('modhu_reviews');return s?JSON.parse(s):DEFAULT_REVIEWS;}catch(e){return DEFAULT_REVIEWS;}}
+function setReviews(a){localStorage.setItem('modhu_reviews',JSON.stringify(a));}
+function getWS(key,fallback){try{var s=localStorage.getItem('modhu_websettings');if(!s)return fallback;var o=JSON.parse(s);return o[key]||fallback;}catch(e){return fallback;}}
+
+// ══════════════════════════════════════
+// RENDER PRODUCTS
+// ══════════════════════════════════════
+function renderProducts(filter){
+  if(!filter)filter='all';
+  var prods=getProducts();
+  var list=filter==='all'?prods:prods.filter(function(p){return p.cat===filter;});
+  var grid=document.getElementById('prodGrid');
+  if(!list.length){grid.innerHTML='<p style="text-align:center;color:var(--brown-l);padding:2rem;grid-column:1/-1">এই ধরনের কোনো পণ্য নেই।</p>';return;}
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var p=list[i];
+    var badge=p.badge?'<div class="prod-badge '+(p.btype||'')+'">'+p.badge+'</div>':'';
+    html+='<div class="prod-card" style="animation-delay:'+(i*.07)+'s">'
+      +badge
+      +'<div class="prod-img" style="background:linear-gradient(135deg,'+(p.bg||'#FFF8E1,#FFF3CD')+')">'+p.icon+'</div>'
+      +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+p.desc+'</p>'
+      +'<div class="prod-bottom">'
+      +'<div class="prod-price">৳'+Number(p.price).toLocaleString()+' <span>/কেজি</span></div>'
+      +'<div class="prod-actions">'
+      +'<button class="btn-cart" data-id="'+p.id+'" data-name="'+encodeURIComponent(p.name)+'" data-price="'+p.price+'" data-icon="'+encodeURIComponent(p.icon)+'" onclick="handleCartBtn(this)">🛒 কার্ট</button>'
+      +'<button class="btn-order-p" data-id="'+p.id+'" data-name="'+encodeURIComponent(p.name)+'" data-price="'+p.price+'" data-icon="'+encodeURIComponent(p.icon)+'" onclick="handleOrderBtn(this)">অর্ডার</button>'
+      +'</div></div></div></div>';
+  }
+  grid.innerHTML=html;
+}
+function renderSB(){
+  var prods=getSBProducts();
+  var html='';
+  for(var i=0;i<prods.length;i++){
+    var p=prods[i];
+    html+='<div class="sb-card" style="animation-delay:'+(i*.08)+'s">'
+      +'<div class="icon">'+p.icon+'</div>'
+      +'<h4>'+p.name+'</h4><p>'+p.desc+'</p>'
+      +'<div class="sb-price">৳ '+Number(p.price).toLocaleString()+'</div>'
+      +'<div class="sb-btns">'
+      +'<button class="btn-cart" data-id="'+p.id+'" data-name="'+encodeURIComponent(p.name)+'" data-price="'+p.price+'" data-icon="'+encodeURIComponent(p.icon)+'" onclick="handleCartBtn(this)">🛒 কার্ট</button>'
+      +'<button class="btn-order-p" data-id="'+p.id+'" data-name="'+encodeURIComponent(p.name)+'" data-price="'+p.price+'" data-icon="'+encodeURIComponent(p.icon)+'" onclick="handleOrderBtn(this)">অর্ডার</button>'
+      +'</div></div>';
+  }
+  document.getElementById('sbGrid').innerHTML=html;
+}
+function filterProd(cat,el){
+  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  renderProducts(cat);
+}
+
+// ══════════════════════════════════════
+// REVIEWS
+// ══════════════════════════════════════
+var selectedStars=5;
+
+function renderReviews(highlightLast){
+  var reviews=getReviews();
+  var grid=document.getElementById('revGrid');
+  if(!reviews.length){grid.innerHTML='<p style="text-align:center;color:var(--brown-l);padding:2rem;grid-column:1/-1">এখনও কোনো মতামত নেই।</p>';return;}
+  var html='';
+  for(var i=0;i<reviews.length;i++){
+    var r=reviews[i];
+    var stars='';for(var s=0;s<(r.stars||5);s++)stars+='★';
+    var isNew=(highlightLast&&i===reviews.length-1)?'new-entry':'';
+    var initials=(r.name||'?').trim()[0];
+    html+='<div class="rev-card '+isNew+'" style="animation-delay:'+(i*.08)+'s">'
+      +'<div class="stars">'+stars+'</div>'
+      +'<p class="rev-text">"'+r.text+'"</p>'
+      +'<div class="rev-author">'
+      +'<div class="rev-av">'+initials+'</div>'
+      +'<div><h4>'+r.name+'</h4><span>'+(r.loc||'')+'</span></div>'
+      +'</div></div>';
+  }
+  grid.innerHTML=html;
+}
+
+function setStars(n){
+  selectedStars=n;
+  document.querySelectorAll('#starPicker span').forEach(function(el,i){
+    el.classList.toggle('active',i<n);
+  });
+}
+
+function toggleRevForm(){
+  var form=document.getElementById('revForm');
+  var btn=document.getElementById('revToggleBtn');
+  form.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function submitReview(){
+  var name=document.getElementById('rvName').value.trim();
+  var loc=document.getElementById('rvLoc').value.trim();
+  var text=document.getElementById('rvText').value.trim();
+  if(!name||!text){showToast('⚠️ নাম ও মতামত আবশ্যক!','#C0392B');return;}
+  var reviews=getReviews();
+  reviews.push({name:name,loc:loc,stars:selectedStars,text:text,ts:Date.now()});
+  setReviews(reviews);
+  renderReviews(true);
+  // close form, clear fields
+  document.getElementById('revForm').classList.remove('open');
+  document.getElementById('revToggleBtn').classList.remove('open');
+  document.getElementById('rvName').value='';
+  document.getElementById('rvLoc').value='';
+  document.getElementById('rvText').value='';
+  setStars(5);
+  showToast('🎉 আপনার মতামত প্রকাশিত হয়েছে!','#2D5A27');
+  // scroll to new review
+  setTimeout(function(){
+    var grid=document.getElementById('revGrid');
+    if(grid)grid.lastElementChild.scrollIntoView({behavior:'smooth',block:'center'});
+  },200);
+}
+
+// ══════════════════════════════════════
+// CART
+// ══════════════════════════════════════
+var cart=[];
+function handleCartBtn(btn){
+  var id=btn.getAttribute('data-id');
+  var name=decodeURIComponent(btn.getAttribute('data-name'));
+  var price=parseFloat(btn.getAttribute('data-price'));
+  var icon=decodeURIComponent(btn.getAttribute('data-icon'));
+  flyToCart(btn);
+  var ex=cart.find(function(i){return String(i.id)===String(id);});
+  if(ex)ex.qty++;else cart.push({id:id,name:name,price:price,icon:icon,qty:1});
+  updateBadge();
+  showToast('✅ '+name+' কার্টে যোগ হয়েছে!','#2D5A27');
+}
+function handleOrderBtn(btn){
+  openOrderSingle(btn.getAttribute('data-id'),decodeURIComponent(btn.getAttribute('data-name')),parseFloat(btn.getAttribute('data-price')),decodeURIComponent(btn.getAttribute('data-icon')));
+}
+function updateBadge(){
+  var n=cart.reduce(function(s,i){return s+i.qty;},0);
+  var b=document.getElementById('cartBadge');
+  b.textContent=n;
+  b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');
+}
+function flyToCart(btn){
+  var r=btn.getBoundingClientRect();
+  var cr=document.querySelector('.cart-pill').getBoundingClientRect();
+  var el=document.createElement('div');
+  el.textContent='🍯';
+  el.style.cssText='position:fixed;left:'+(r.left+r.width/2)+'px;top:'+(r.top+r.height/2)+'px;font-size:1.8rem;z-index:9999;pointer-events:none;transition:all .7s cubic-bezier(.4,0,.2,1);transform:translate(-50%,-50%);';
+  document.body.appendChild(el);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    el.style.left=(cr.left+cr.width/2)+'px';el.style.top=(cr.top+cr.height/2)+'px';el.style.fontSize='.3rem';el.style.opacity='0';
+  });});
+  setTimeout(function(){el.remove();},750);
+}
+function openCart(){renderCartItems();document.getElementById('cartModal').classList.add('open');}
+function closeCart(){document.getElementById('cartModal').classList.remove('open');}
+function renderCartItems(){
+  var c=document.getElementById('cartItems');var f=document.getElementById('cartFoot');
+  if(!cart.length){c.innerHTML='<div class="empty-cart"><span>🛒</span>কার্ট এখনও খালি!</div>';f.innerHTML='';return;}
+  var html='';
+  for(var i=0;i<cart.length;i++){
+    var item=cart[i];
+    html+='<div class="cart-item" style="animation-delay:'+(i*.05)+'s">'
+      +'<span class="ci-icon">'+item.icon+'</span>'
+      +'<div class="ci-info"><h4>'+item.name+'</h4><p>৳'+item.price+'/কেজি</p></div>'
+      +'<div class="ci-qty">'
+      +'<button class="qty-btn" data-id="'+item.id+'" data-delta="-1" onclick="changeQty(this)">−</button>'
+      +'<span style="font-weight:700;min-width:22px;text-align:center">'+item.qty+'</span>'
+      +'<button class="qty-btn" data-id="'+item.id+'" data-delta="1" onclick="changeQty(this)">+</button>'
+      +'</div>'
+      +'<span class="ci-price">৳'+(item.qty*item.price).toLocaleString()+'</span>'
+      +'<button class="ci-rm" data-id="'+item.id+'" onclick="removeCart(this)">🗑️</button>'
+      +'</div>';
+  }
+  c.innerHTML=html;
+  var tot=cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  f.innerHTML='<div class="cart-total-row"><span>মোট মূল্য:</span><span class="tp">৳'+tot.toLocaleString()+'</span></div>'
+    +'<button class="checkout-btn" onclick="checkoutCart()">✅ সব পণ্য অর্ডার করুন</button>';
+}
+function changeQty(btn){
+  var id=btn.getAttribute('data-id');var delta=parseInt(btn.getAttribute('data-delta'));
+  var item=cart.find(function(i){return String(i.id)===String(id);});
+  if(!item)return;
+  item.qty+=delta;
+  if(item.qty<=0)cart=cart.filter(function(i){return String(i.id)!==String(id);});
+  updateBadge();renderCartItems();
+}
+function removeCart(btn){
+  var id=btn.getAttribute('data-id');
+  cart=cart.filter(function(i){return String(i.id)!==String(id);});
+  updateBadge();renderCartItems();
+  showToast('🗑️ পণ্য সরানো হয়েছে','#A85C0A');
+}
+
+// ══════════════════════════════════════
+// ORDER
+// ══════════════════════════════════════
+var currentOrder=null;
+function openOrderSingle(id,name,price,icon){
+  currentOrder={isCart:false,id:id,name:name,price:price,icon:icon};
+  document.getElementById('spIcon').textContent=icon;
+  document.getElementById('spName').textContent=name;
+  document.getElementById('spPrice').textContent='৳'+Number(price).toLocaleString()+' / কেজি';
+  document.getElementById('cartSummaryBox').innerHTML='';
+  document.getElementById('qtyBox').style.display='flex';
+  document.getElementById('orderModal').classList.add('open');
+}
+function checkoutCart(){
+  if(!cart.length)return;
+  var tot=cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  currentOrder={isCart:true,cartItems:cart.slice()};
+  document.getElementById('spIcon').textContent='🛒';
+  document.getElementById('spName').textContent=cart.length+'টি পণ্যের অর্ডার';
+  document.getElementById('spPrice').textContent='';
+  var sumHtml='<div class="cart-summary"><h4>📋 অর্ডার সারসংক্ষেপ</h4>';
+  for(var i=0;i<cart.length;i++)sumHtml+='<div class="cart-summary-item"><span>'+cart[i].icon+' '+cart[i].name+' ×'+cart[i].qty+'</span><span>৳'+(cart[i].qty*cart[i].price).toLocaleString()+'</span></div>';
+  sumHtml+='<div class="cart-summary-total"><span>মোট:</span><span>৳'+tot.toLocaleString()+'</span></div></div>';
+  document.getElementById('cartSummaryBox').innerHTML=sumHtml;
+  document.getElementById('qtyBox').style.display='none';
+  closeCart();document.getElementById('orderModal').classList.add('open');
+}
+function closeOrder(){document.getElementById('orderModal').classList.remove('open');}
+function submitOrder(){
+  var name=document.getElementById('oName').value.trim();
+  var phone=document.getElementById('oPhone').value.trim();
+  var address=document.getElementById('oAddress').value.trim();
+  if(!name||!phone||!address){showToast('⚠️ নাম, ফোন ও ঠিকানা আবশ্যক!','#C0392B');return;}
+  var payment=document.getElementById('oPayment').value;
+  var note=document.getElementById('oNote').value.trim();
+  var ts=new Date().toLocaleString('bn-BD');
+  var newOrders=[];
+  if(currentOrder&&currentOrder.isCart&&currentOrder.cartItems){
+    for(var i=0;i<currentOrder.cartItems.length;i++){
+      var item=currentOrder.cartItems[i];
+      newOrders.push({product:item.name,icon:item.icon,price:item.price*item.qty,unitPrice:item.price,qty:item.qty+'কেজি',name:name,phone:phone,address:address,payment:payment,note:note,time:ts,status:'নতুন অর্ডার'});
+    }
+    cart=[];updateBadge();
+  }else if(currentOrder){
+    var qty=document.getElementById('oQty').value;
+    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:currentOrder.price,qty:qty,name:name,phone:phone,address:address,payment:payment,note:note,time:ts,status:'নতুন অর্ডার'});
+  }
+  // Save to Firebase if available, else localStorage fallback
+  if(window._firebaseReady && window._fbDB){
+    var ordersRef = window._fbRef(window._fbDB, 'orders');
+    newOrders.forEach(function(ord){
+      window._fbPush(ordersRef, ord);
+    });
+  } else {
+    // localStorage fallback
+    var orders=[];try{orders=JSON.parse(localStorage.getItem('modhu_orders')||'[]');}catch(e){}
+    newOrders.forEach(function(ord){ ord.id='ORD-'+Date.now(); orders.unshift(ord); });
+    localStorage.setItem('modhu_orders',JSON.stringify(orders));
+  }
+  closeOrder();
+  showToast('🎉 অর্ডার সফলভাবে গ্রহণ হয়েছে!','#2D5A27');
+  ['oName','oPhone','oAddress','oNote'].forEach(function(id){document.getElementById(id).value='';});
+}
+
+
+// ══════════════════════════════════════
+// MY ORDERS
+// ══════════════════════════════════════
+function openMyOrders(){
+  document.getElementById('myOrdersModal').classList.add('open');
+  document.getElementById('moSearch').value='';
+  document.getElementById('myOrdersList').innerHTML='<div class="mo-empty"><span>🔍</span>মোবাইল নম্বর দিয়ে অর্ডার খুঁজুন</div>';
+}
+function closeMyOrders(){document.getElementById('myOrdersModal').classList.remove('open');}
+function searchMyOrders(){
+  var q=document.getElementById('moSearch').value.trim();
+  var listEl=document.getElementById('myOrdersList');
+  if(q.length<5){listEl.innerHTML='<div class="mo-empty"><span>🔍</span>কমপক্ষে ৫ সংখ্যা দিন</div>';return;}
+  listEl.innerHTML='<div class="mo-empty"><span>⏳</span>খুঁজছি...</div>';
+  if(window._firebaseReady && window._fbDB){
+    var ordersRef = window._fbRef(window._fbDB, 'orders');
+    window._fbGet(ordersRef).then(function(snap){
+      var orders=[];
+      if(snap.exists()){
+        var data=snap.val();
+        Object.keys(data).forEach(function(k){ var o=data[k]; o.id=k; orders.unshift(o); });
+      }
+      var found=orders.filter(function(o){return (o.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));});
+      renderMyOrders(found);
+    });
+    return;
+  }
+  var orders=[];try{orders=JSON.parse(localStorage.getItem('modhu_orders')||'[]');}catch(e){}
+  var found=orders.filter(function(o){return (o.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));});
+  renderMyOrders(found);
+}
+function renderMyOrders(found){
+  var listEl=document.getElementById('myOrdersList');
+  if(!found.length){listEl.innerHTML='<div class="mo-empty"><span>📭</span>এই নম্বরে কোনো অর্ডার পাওয়া যায়নি</div>';return;}
+  var statusCls={'নতুন অর্ডার':'mo-s-new','নিশ্চিত':'mo-s-confirmed','প্রক্রিয়াধীন':'mo-s-processing','ডেলিভারি দেওয়া হয়েছে':'mo-s-delivered','বাতিল':'mo-s-cancelled'};
+  var html='<p style="font-size:.82rem;color:var(--green);font-weight:700;margin-bottom:.8rem">✅ '+found.length+'টি অর্ডার পাওয়া গেছে</p>';
+  found.forEach(function(o,i){
+    html+='<div class="mo-order-card" style="animation-delay:'+(i*.06)+'s">'
+      +'<div class="mo-top"><span class="mo-prod">'+(o.icon||'🍯')+' '+o.product+'</span>'
+      +'<span class="mo-status '+(statusCls[o.status]||'')+'">'+(o.status||'নতুন')+'</span></div>'
+      +'<div class="mo-details"><span>📦 '+(o.qty||'—')+'</span><span>💳 '+(o.payment||'—')+'</span><span>🕒 '+(o.time||'—')+'</span></div>'
+      +'<div class="mo-price">৳'+Number(o.price||0).toLocaleString()+'</div>'
+      +'</div>';
+  });
+  listEl.innerHTML=html;
+}
+document.getElementById('myOrdersModal').addEventListener('click',function(e){if(e.target.id==='myOrdersModal')closeMyOrders();});
+// ══════════════════════════════════════
+// TOAST & MODAL CLOSE
+// ══════════════════════════════════════
+function showToast(msg,bg){
+  var t=document.getElementById('toast');t.textContent=msg;t.style.background=bg||'#2D5A27';
+  t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3500);
+}
+['orderModal','cartModal'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(e){if(e.target.id===id)document.getElementById(id).classList.remove('open');});
+});
+
+// ══════════════════════════════════════
+// WEB SETTINGS — Admin panel থেকে পরিবর্তন লোড
+// ══════════════════════════════════════
+function applyWebSettings(){
+  var ws=function(k,d){return getWS(k,d);};
+  // Logo & title
+  var sitename=ws('sitename','মধুবন');
+  document.title=sitename+' — বিশুদ্ধ মধুর দোকান';
+  var logo=document.getElementById('dynLogo');if(logo)logo.textContent='🍯 '+sitename;
+  var flogo=document.getElementById('dynFooterLogo');if(flogo)flogo.textContent='🍯 '+sitename;
+  // Hero
+  var ht=document.getElementById('heroTag');if(ht)ht.textContent='🌸 '+ws('herotag','১০০% বিশুদ্ধ ও প্রাকৃতিক মধু');
+  var h1a=document.getElementById('heroH1a');if(h1a)h1a.textContent=ws('hero1','প্রকৃতির');
+  var h1b=document.getElementById('heroH1b');if(h1b)h1b.textContent=ws('hero2','সেরা মধু');
+  var hd=document.getElementById('heroDesc');if(hd)hd.textContent=ws('herodesc','বিভিন্ন ফুলের বিশুদ্ধ মধু ও সুন্দরবনের দুর্লভ মধু — সরাসরি মৌচাক থেকে আপনার কাছে।');
+  // Stats
+  var s1n=document.getElementById('heroStat1n');if(s1n)s1n.textContent=ws('stat1n','১২+');
+  var s1l=document.getElementById('heroStat1l');if(s1l)s1l.textContent=ws('stat1l','ধরনের মধু');
+  var s2n=document.getElementById('heroStat2n');if(s2n)s2n.textContent=ws('stat2n','১৫০+');
+  var s2l=document.getElementById('heroStat2l');if(s2l)s2l.textContent=ws('stat2l','সন্তুষ্ট ক্রেতা');
+  var s3n=document.getElementById('heroStat3n');if(s3n)s3n.textContent=ws('stat3n','১০০%');
+  var s3l=document.getElementById('heroStat3l');if(s3l)s3l.textContent=ws('stat3l','বিশুদ্ধ');
+  // Phone & WA
+  var phone=ws('phone','+8809678642903');
+  var waPhone=ws('waphone','8801747401484');
+  var waLink='https://wa.me/'+waPhone;
+  var ph=document.getElementById('dynPhone');if(ph)ph.textContent=phone;
+  var fl=document.getElementById('dynFooterLine');if(fl)fl.textContent='📍 '+ws('address','সাতক্ষীরা, বাংলাদেশ')+' | 📱 '+phone;
+  // All WA links → only use waPhone (NOT display phone)
+  [document.getElementById('waFloat'),document.getElementById('waHeroBtn'),document.getElementById('waContactBtn')].forEach(function(el){
+    if(el)el.href=waLink;
+  });
+  // Address, hours
+  var addr=document.getElementById('dynAddress');if(addr)addr.textContent=ws('address','সাতক্ষীরা, বাংলাদেশ');
+  var hrs=document.getElementById('dynHours');if(hrs)hrs.textContent=ws('hours','সকাল ৯টা – রাত ১০টা');
+  // Copyright
+  var cp=document.getElementById('dynCopyright');if(cp)cp.textContent=ws('copyright','© ২০২৫ মধুবন | সাতক্ষীরা, বাংলাদেশ | সর্বস্বত্ব সংরক্ষিত');
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+applyWebSettings();
+renderProducts('all');
+renderSB();
+renderReviews(false);
+</script>
+</body>
+</html>
