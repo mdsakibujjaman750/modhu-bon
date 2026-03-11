@@ -254,7 +254,6 @@ footer{background:var(--brown);color:rgba(255,255,255,.75);padding:2.5rem 4% 1.5
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// ══ FIREBASE CONFIG — নিজের config এখানে বসান ══
 const firebaseConfig = {
   apiKey: "AIzaSyD8ixO1HwtDlAkt-zqx23fIU8kUBpFb28I",
   authDomain: "modhu--bon.firebaseapp.com",
@@ -274,26 +273,31 @@ window._fbSet = set;
 window._fbGet = get;
 window._firebaseReady = true;
 
-// Load products, reviews, settings from Firebase and apply to page
-Promise.all([
-  get(ref(db,'products')),
-  get(ref(db,'sbproducts')),
-  get(ref(db,'reviews')),
-  get(ref(db,'settings'))
-]).then(function(results){
-  if(results[0].exists()) window._fbProducts = results[0].val();
-  if(results[1].exists()) window._fbSBProducts = results[1].val();
-  if(results[2].exists()) window._fbReviews = results[2].val();
-  if(results[3].exists()){ window._fbSettings = results[3].val(); }
-  // Re-render page with Firebase data
-  if(window._pageReady){
-    applyWebSettings();
-    renderProducts();
-    renderSBProducts();
-    renderReviews();
-  }
-  window._fbDataLoaded = true;
-}).catch(function(e){ console.log('FB load error:', e); });
+function applyFB(){
+  if(!window._pageReady) return;
+  applyWebSettings();
+  renderProducts();
+  renderSB();
+  renderReviews();
+}
+
+// Real-time listeners - fires immediately on load AND on every change
+onValue(ref(db,'products'), function(s){
+  if(s.exists()){ var d=s.val(); window._fbProducts = Array.isArray(d)?d:Object.values(d); }
+  applyFB();
+});
+onValue(ref(db,'sbproducts'), function(s){
+  if(s.exists()){ var d=s.val(); window._fbSBProducts = Array.isArray(d)?d:Object.values(d); }
+  applyFB();
+});
+onValue(ref(db,'reviews'), function(s){
+  if(s.exists()){ var d=s.val(); window._fbReviews = Array.isArray(d)?d:Object.values(d); }
+  applyFB();
+});
+onValue(ref(db,'settings'), function(s){
+  if(s.exists()) window._fbSettings = s.val();
+  applyFB();
+});
 </script>
 </head>
 <body>
@@ -517,7 +521,13 @@ function getReviews(){
   if(window._fbReviews) return window._fbReviews;
   try{var s=localStorage.getItem('modhu_reviews');return s?JSON.parse(s):DEFAULT_REVIEWS;}catch(e){return DEFAULT_REVIEWS;}
 }
-function setReviews(a){localStorage.setItem('modhu_reviews',JSON.stringify(a));}
+function setReviews(a){
+  window._fbReviews = a;
+  if(window._firebaseReady && window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB, 'reviews'), a);
+  }
+  localStorage.setItem('modhu_reviews',JSON.stringify(a));
+}
 function getWS(key,fallback){
   var src = window._fbSettings || (function(){try{var s=localStorage.getItem('modhu_websettings');return s?JSON.parse(s):{};}catch(e){return{};}})();
   return src[key]||fallback;
@@ -878,13 +888,7 @@ function applyWebSettings(){
 // ══════════════════════════════════════
 applyWebSettings();
 window._pageReady = true;
-// If Firebase already loaded, re-apply immediately
-if(window._fbDataLoaded){
-  applyWebSettings();
-  renderProducts();
-  renderSBProducts();
-  renderReviews();
-}
+// Firebase onValue will fire and re-render automatically
 renderProducts('all');
 renderSB();
 renderReviews(false);

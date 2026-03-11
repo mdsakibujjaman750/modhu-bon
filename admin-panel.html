@@ -422,8 +422,11 @@ function login(){
   var u = document.getElementById('lu').value;
   var p = document.getElementById('lp').value;
   if(u === 'admin' && p === 'S75'){
-    // Save session with 2 hour expiry
     var expiry = Date.now() + (2 * 60 * 60 * 1000);
+    // Save session to Firebase so works on all devices
+    if(window._firebaseReady && window._fbDB){
+      window._fbSet(window._fbRef(window._fbDB, 'adminsession'), {expiry: expiry});
+    }
     localStorage.setItem('modhu_admin_session', expiry);
     showDash();
   } else {
@@ -436,17 +439,32 @@ function showDash(){
   loadOrders();
 }
 function checkSession(){
-  var expiry = localStorage.getItem('modhu_admin_session');
-  if(expiry && Date.now() < parseInt(expiry)){
-    // Session valid - auto login
+  // First check localStorage (instant)
+  var localExp = localStorage.getItem('modhu_admin_session');
+  if(localExp && Date.now() < parseInt(localExp)){
     showDash();
     return true;
   }
-  localStorage.removeItem('modhu_admin_session');
+  // Then check Firebase (works on other devices)
+  if(window._firebaseReady && window._fbDB){
+    window._fbGet(window._fbRef(window._fbDB, 'adminsession')).then(function(snap){
+      if(snap.exists()){
+        var expiry = snap.val().expiry;
+        if(Date.now() < expiry){
+          localStorage.setItem('modhu_admin_session', expiry);
+          showDash();
+        }
+      }
+    });
+  }
   return false;
 }
 function logout(){
   localStorage.removeItem('modhu_admin_session');
+  // Clear Firebase session too
+  if(window._firebaseReady && window._fbDB){
+    window._fbRemove(window._fbRef(window._fbDB, 'adminsession'));
+  }
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('dash').style.display = 'none';
   document.getElementById('lu').value = '';
@@ -484,9 +502,11 @@ function setProds(t, a){
   var fbKey = (t === 'sb') ? 'sbproducts' : 'products';
   if(t === 'sb') window._fbSBProducts = a; else window._fbProducts = a;
   if(window._firebaseReady && window._fbDB){
+    // Save as plain array
     window._fbSet(window._fbRef(window._fbDB, fbKey), a);
   }
   localStorage.setItem((t === 'sb') ? 'modhu_sb_products' : 'modhu_products', JSON.stringify(a));
+  toast('✅ Firebase এ save হয়েছে!', '#2D5A27');
 }
 function getRevs(){
   if(window._fbReviews) return window._fbReviews;
@@ -498,6 +518,7 @@ function setRevs(a){
     window._fbSet(window._fbRef(window._fbDB, 'reviews'), a);
   }
   localStorage.setItem('modhu_reviews', JSON.stringify(a));
+  toast('✅ Firebase এ save হয়েছে!', '#2D5A27');
 }
 function getWS(){
   if(window._fbSettings) return window._fbSettings;
@@ -975,13 +996,13 @@ function loadWS(){
   }
 }
 function saveWS(){
-  var ws = getWS();
+  var ws = {};
   for(var i = 0; i < WF.length; i++){
     var el = document.getElementById('ws_' + WF[i]);
     if(el) ws[WF[i]] = el.value.trim();
   }
   setWS(ws);
-  toast('✅ সেটিং সংরক্ষিত! Website reload করলে দেখাবে।', '#2D5A27');
+  toast('✅ সেটিং save হয়েছে! Website এ সাথে সাথে দেখাবে।', '#2D5A27');
 }
 
 // ---- NOTIFICATIONS ----
@@ -1053,7 +1074,8 @@ function toast(msg, bg){
 
 // ---- DEMO DATA ----
 // Auto session check on page load
-checkSession();
+// Wait a moment for Firebase to initialize
+setTimeout(function(){ checkSession(); }, 800);
 
 if(!localStorage.getItem('modhu_orders')){
     localStorage.setItem('modhu_orders', JSON.stringify([
