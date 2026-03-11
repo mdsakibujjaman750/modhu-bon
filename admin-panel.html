@@ -195,8 +195,6 @@ const firebaseConfig = {
   messagingSenderId: "942439122447",
   appId: "1:942439122447:web:677dce98ab39895bf5057a"
 };
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 window._fbDB = db;
@@ -222,6 +220,12 @@ onValue(ordersRef, function(snap){
   window._fbOrders = orders;
   if(window._fbOrdersCallback) window._fbOrdersCallback(orders);
 });
+
+// Load products/reviews/settings once
+get(ref(db,'products')).then(function(s){ if(s.exists()) window._fbProducts = s.val(); });
+get(ref(db,'sbproducts')).then(function(s){ if(s.exists()) window._fbSBProducts = s.val(); });
+get(ref(db,'reviews')).then(function(s){ if(s.exists()) window._fbReviews = s.val(); });
+get(ref(db,'settings')).then(function(s){ if(s.exists()) window._fbSettings = s.val(); });
 </script>
 </head>
 <body>
@@ -418,14 +422,31 @@ function login(){
   var u = document.getElementById('lu').value;
   var p = document.getElementById('lp').value;
   if(u === 'admin' && p === 'S75'){
-    document.getElementById('loginWrap').style.display = 'none';
-    document.getElementById('dash').style.display = 'block';
-    loadOrders();
+    // Save session with 2 hour expiry
+    var expiry = Date.now() + (2 * 60 * 60 * 1000);
+    localStorage.setItem('modhu_admin_session', expiry);
+    showDash();
   } else {
     document.getElementById('lerr').style.display = 'block';
   }
 }
+function showDash(){
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  loadOrders();
+}
+function checkSession(){
+  var expiry = localStorage.getItem('modhu_admin_session');
+  if(expiry && Date.now() < parseInt(expiry)){
+    // Session valid - auto login
+    showDash();
+    return true;
+  }
+  localStorage.removeItem('modhu_admin_session');
+  return false;
+}
 function logout(){
+  localStorage.removeItem('modhu_admin_session');
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('dash').style.display = 'none';
   document.getElementById('lu').value = '';
@@ -453,15 +474,42 @@ function go(pageName, navId){
 function getOrders(){ try{ return JSON.parse(localStorage.getItem('modhu_orders') || '[]'); }catch(e){ return []; } }
 function setOrders(a){ localStorage.setItem('modhu_orders', JSON.stringify(a)); }
 function getProds(t){
+  if(t === 'sb' && window._fbSBProducts) return window._fbSBProducts;
+  if(t !== 'sb' && window._fbProducts) return window._fbProducts;
   var key = (t === 'sb') ? 'modhu_sb_products' : 'modhu_products';
   try{ var s = localStorage.getItem(key); return s ? JSON.parse(s) : (t === 'sb' ? defSB() : defMain()); }
   catch(e){ return (t === 'sb') ? defSB() : defMain(); }
 }
-function setProds(t, a){ localStorage.setItem((t === 'sb') ? 'modhu_sb_products' : 'modhu_products', JSON.stringify(a)); }
-function getRevs(){ try{ var s = localStorage.getItem('modhu_reviews'); return s ? JSON.parse(s) : defRevs(); }catch(e){ return defRevs(); } }
-function setRevs(a){ localStorage.setItem('modhu_reviews', JSON.stringify(a)); }
-function getWS(){ try{ return JSON.parse(localStorage.getItem('modhu_websettings') || '{}'); }catch(e){ return {}; } }
-function setWS(o){ localStorage.setItem('modhu_websettings', JSON.stringify(o)); }
+function setProds(t, a){
+  var fbKey = (t === 'sb') ? 'sbproducts' : 'products';
+  if(t === 'sb') window._fbSBProducts = a; else window._fbProducts = a;
+  if(window._firebaseReady && window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB, fbKey), a);
+  }
+  localStorage.setItem((t === 'sb') ? 'modhu_sb_products' : 'modhu_products', JSON.stringify(a));
+}
+function getRevs(){
+  if(window._fbReviews) return window._fbReviews;
+  try{ var s = localStorage.getItem('modhu_reviews'); return s ? JSON.parse(s) : defRevs(); }catch(e){ return defRevs(); }
+}
+function setRevs(a){
+  window._fbReviews = a;
+  if(window._firebaseReady && window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB, 'reviews'), a);
+  }
+  localStorage.setItem('modhu_reviews', JSON.stringify(a));
+}
+function getWS(){
+  if(window._fbSettings) return window._fbSettings;
+  try{ return JSON.parse(localStorage.getItem('modhu_websettings') || '{}'); }catch(e){ return {}; }
+}
+function setWS(o){
+  window._fbSettings = o;
+  if(window._firebaseReady && window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB, 'settings'), o);
+  }
+  localStorage.setItem('modhu_websettings', JSON.stringify(o));
+}
 
 // ---- DEFAULT DATA ----
 function defMain(){
@@ -1004,6 +1052,9 @@ function toast(msg, bg){
 }
 
 // ---- DEMO DATA ----
+// Auto session check on page load
+checkSession();
+
 if(!localStorage.getItem('modhu_orders')){
     localStorage.setItem('modhu_orders', JSON.stringify([
       {id:'ORD-1001', product:'সুন্দরবন প্রিমিয়াম', icon:'🌳', price:850, name:'রাহেলা বেগম', phone:'01712345678', address:'মিরপুর, ঢাকা', qty:'১ কেজি', payment:'বিকাশ', note:'', time:'১১/০৩/২০২৫', status:'নতুন অর্ডার'},

@@ -273,7 +273,27 @@ window._fbOnValue = onValue;
 window._fbSet = set;
 window._fbGet = get;
 window._firebaseReady = true;
-console.log("Firebase ready");
+
+// Load products, reviews, settings from Firebase and apply to page
+Promise.all([
+  get(ref(db,'products')),
+  get(ref(db,'sbproducts')),
+  get(ref(db,'reviews')),
+  get(ref(db,'settings'))
+]).then(function(results){
+  if(results[0].exists()) window._fbProducts = results[0].val();
+  if(results[1].exists()) window._fbSBProducts = results[1].val();
+  if(results[2].exists()) window._fbReviews = results[2].val();
+  if(results[3].exists()){ window._fbSettings = results[3].val(); }
+  // Re-render page with Firebase data
+  if(window._pageReady){
+    applyWebSettings();
+    renderProducts();
+    renderSBProducts();
+    renderReviews();
+  }
+  window._fbDataLoaded = true;
+}).catch(function(e){ console.log('FB load error:', e); });
 </script>
 </head>
 <body>
@@ -485,11 +505,23 @@ var DEFAULT_REVIEWS=[
 // ══════════════════════════════════════
 // STORAGE HELPERS
 // ══════════════════════════════════════
-function getProducts(){try{var s=localStorage.getItem('modhu_products');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}}
-function getSBProducts(){try{var s=localStorage.getItem('modhu_sb_products');return s?JSON.parse(s):SB_DEFAULTS;}catch(e){return SB_DEFAULTS;}}
-function getReviews(){try{var s=localStorage.getItem('modhu_reviews');return s?JSON.parse(s):DEFAULT_REVIEWS;}catch(e){return DEFAULT_REVIEWS;}}
+function getProducts(){
+  if(window._fbProducts) return window._fbProducts;
+  try{var s=localStorage.getItem('modhu_products');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}
+}
+function getSBProducts(){
+  if(window._fbSBProducts) return window._fbSBProducts;
+  try{var s=localStorage.getItem('modhu_sb_products');return s?JSON.parse(s):SB_DEFAULTS;}catch(e){return SB_DEFAULTS;}
+}
+function getReviews(){
+  if(window._fbReviews) return window._fbReviews;
+  try{var s=localStorage.getItem('modhu_reviews');return s?JSON.parse(s):DEFAULT_REVIEWS;}catch(e){return DEFAULT_REVIEWS;}
+}
 function setReviews(a){localStorage.setItem('modhu_reviews',JSON.stringify(a));}
-function getWS(key,fallback){try{var s=localStorage.getItem('modhu_websettings');if(!s)return fallback;var o=JSON.parse(s);return o[key]||fallback;}catch(e){return fallback;}}
+function getWS(key,fallback){
+  var src = window._fbSettings || (function(){try{var s=localStorage.getItem('modhu_websettings');return s?JSON.parse(s):{};}catch(e){return{};}})();
+  return src[key]||fallback;
+}
 
 // ══════════════════════════════════════
 // RENDER PRODUCTS
@@ -845,6 +877,14 @@ function applyWebSettings(){
 // INIT
 // ══════════════════════════════════════
 applyWebSettings();
+window._pageReady = true;
+// If Firebase already loaded, re-apply immediately
+if(window._fbDataLoaded){
+  applyWebSettings();
+  renderProducts();
+  renderSBProducts();
+  renderReviews();
+}
 renderProducts('all');
 renderSB();
 renderReviews(false);
