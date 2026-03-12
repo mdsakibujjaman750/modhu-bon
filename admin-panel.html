@@ -217,7 +217,7 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--bro
 .pay-detail-row:last-child{border:none;font-weight:700;color:#2D5A27;font-size:.85rem}
 .trx-box{background:#EDE7F6;border:1.5px solid #B39DDB;border-radius:10px;padding:.5rem .8rem;margin-top:.4rem;font-family:monospace;font-size:.88rem;font-weight:700;color:#4A148C;text-align:center;letter-spacing:1px}
 
-.pay-filter-btn{background:white;border:2px solid #E8D5B0;color:var(--brown-l);border-radius:20px;padding:.3rem .85rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
+
 .pay-filter-btn.active{background:var(--amber);border-color:var(--amber-d);color:white}
 .pay-card{background:white;border-radius:14px;padding:.85rem 1rem;margin-bottom:.6rem;box-shadow:0 2px 10px rgba(59,31,10,.07);border-left:4px solid #E8D5B0;transition:box-shadow .2s}
 .pay-card:hover{box-shadow:0 4px 18px rgba(59,31,10,.13)}
@@ -318,7 +318,6 @@ setTimeout(function(){
       <li><div class="sb-item" id="nav-products" onclick="go('products','nav-products')">🍯 পণ্য — Add / Edit / Remove</div></li>
       <li><div class="sb-item" id="nav-sbproducts" onclick="go('sbproducts','nav-sbproducts')">🌳 সুন্দরবন পণ্য</div></li>
       <div class="sb-sep"></div>
-      <li><div class="sb-item" id="nav-payment" onclick="go('payment','nav-payment')" style="background:linear-gradient(90deg,rgba(106,27,154,.25),transparent);border-left:3px solid #B39DDB">💳 Payment চেক</div></li>
       <li><div class="sb-item" id="nav-reviews" onclick="go('reviews','nav-reviews')">💬 মতামত ব্যবস্থাপনা</div></li>
       <li><div class="sb-item" id="nav-settings" onclick="go('settings','nav-settings')">⚙️ ওয়েবসাইট সেটিং</div></li>
     </ul>
@@ -397,26 +396,6 @@ setTimeout(function(){
       </div>
       <div class="prod-grid" id="sbgrid"></div>
     </div>
-
-    <div class="page" id="page-payment">
-      <div class="topbar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-        <h1>💳 Payment চেক</h1>
-        <button onclick="clearPayHistory()" style="background:#C0392B;color:white;border:none;border-radius:10px;padding:.4rem 1rem;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">🗑️ History মুছুন</button>
-      </div>
-      <!-- Summary cards -->
-      <div id="pay-summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.2rem"></div>
-      <!-- Filter bar -->
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
-        <button class="pay-filter-btn active" id="pf-all" onclick="filterPayPage('all',this)">সব</button>
-        <button class="pay-filter-btn" id="pf-cod" onclick="filterPayPage('cod',this)">💵 COD</button>
-        <button class="pay-filter-btn" id="pf-del" onclick="filterPayPage('del',this)">📲 ডেলিভারি</button>
-        <button class="pay-filter-btn" id="pf-full" onclick="filterPayPage('full',this)">💳 ফুল</button>
-        <button class="pay-filter-btn" id="pf-trx" onclick="filterPayPage('trx',this)">🔑 TrxID আছে</button>
-        <input id="pay-search" oninput="filterPayPage(null,null)" placeholder="🔍 নাম / TrxID / ফোন..." style="flex:1;min-width:160px;border:2px solid #E8D5B0;border-radius:10px;padding:.4rem .8rem;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;outline:none"/>
-      </div>
-      <div id="pay-list-wrap"></div>
-    </div>
-
     <div class="page" id="page-reviews">
       <div class="topbar">
         <h1>💬 মতামত ব্যবস্থাপনা</h1>
@@ -543,7 +522,7 @@ function logout(){
 }
 
 // ---- NAVIGATION ----
-var navIds = ['nav-orders','nav-analytics','nav-products','nav-sbproducts','nav-payment','nav-reviews','nav-settings'];
+var navIds = ['nav-orders','nav-analytics','nav-products','nav-sbproducts','nav-reviews','nav-settings'];
 function go(pageName, navId){
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   navIds.forEach(function(id){ 
@@ -557,7 +536,6 @@ function go(pageName, navId){
   if(pageName === 'sbproducts') renderProds('sb');
   if(pageName === 'reviews') renderRevs();
   if(pageName === 'settings') loadWS();
-  if(pageName === 'payment') renderPaymentPage();
 }
 
 // ---- STORAGE ----
@@ -1067,116 +1045,6 @@ function renderPaymentPage(){
   document.getElementById('pay-summary-cards').innerHTML = ch;
   filterPayPage('all', document.getElementById('pf-all'));
 }
-
-function filterPayPage(type, btn){
-  if(type) _payFilter = type;
-  if(btn){
-    document.querySelectorAll('.pay-filter-btn').forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-  }
-  var q = (document.getElementById('pay-search')||{value:''}).value.toLowerCase();
-  var orders = getOrders();
-
-  // Group cart orders: same phone + same created_at minute
-  var groups = [];
-  var seen = {};
-  orders.forEach(function(o){
-    var minKey = (o.phone||'') + '|' + (o.created_at||o.time||'').substring(0,16);
-    if(seen[minKey]){
-      seen[minKey].items.push(o);
-      seen[minKey].totalPrice += Number(o.price||0);
-    } else {
-      var g = {items:[o], phone:o.phone, name:o.name, payment:o.payment, trxId:o.trxId,
-               deliveryCharge:o.deliveryCharge, time:o.time, created_at:o.created_at,
-               totalPrice:Number(o.price||0), status:o.status};
-      seen[minKey] = g;
-      groups.push(g);
-    }
-  });
-
-  var filtered = groups.filter(function(g){
-    var p = g.payment||'';
-    var isFull = p.indexOf('(ফুল)')>-1;
-    var isDel = p.indexOf('(ডেলিভারি)')>-1;
-    var isCod = !isFull && !isDel;
-    if(_payFilter==='full' && !isFull) return false;
-    if(_payFilter==='del' && !isDel) return false;
-    if(_payFilter==='cod' && !isCod) return false;
-    if(_payFilter==='trx' && !g.trxId) return false;
-    if(q && !((g.name||'').toLowerCase().includes(q)) && !((g.trxId||'').toLowerCase().includes(q)) && !((g.phone||'').includes(q))) return false;
-    return true;
-  });
-
-  var html = '';
-  if(!filtered.length){
-    html = '<div class="pay-empty">📭 কোনো পেমেন্ট তথ্য নেই</div>';
-  } else {
-    filtered.forEach(function(o){
-      // Use group as "o" — items array for cart
-      o.price = o.totalPrice;
-      var p = o.payment||'';
-      var isFull = p.indexOf('(ফুল)')>-1;
-      var isDel = p.indexOf('(ডেলিভারি)')>-1;
-      var cls = isFull?'is-full':(isDel?'is-del':'is-cod');
-      var method = p.replace('(ফুল)','').replace('(ডেলিভারি)','').trim()||'ক্যাশ অন ডেলিভারি';
-      var badgeStyle = isFull?'background:#E8F5E9;color:#2E7D32':(isDel?'background:#E3F2FD;color:#1565C0':'background:#FFF3E0;color:#E65100');
-      var badgeTxt = isFull?'💳 ফুল পেমেন্ট':(isDel?'📲 ডেলিভারি পেমেন্ট':'💵 ক্যাশ অন ডেলিভারি');
-      var dc = Number(o.deliveryCharge||0);
-      var base = Number(o.unitPrice||0);
-      var total = Number(o.price||0);
-      html += '<div class="pay-card '+cls+'">';
-      html += '<div class="pay-card-top">';
-      html += '<span style="font-size:1.1rem">'+(o.icon||'🍯')+'</span>';
-      html += '<span class="pay-card-name">'+o.product+'</span>';
-      html += '<span class="pay-card-amt">৳'+total.toLocaleString()+'</span>';
-      html += '</div>';
-      html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem;flex-wrap:wrap">';
-      html += '<span class="pay-method-badge" style="'+badgeStyle+'">'+badgeTxt+'</span>';
-      html += '<span style="font-size:.78rem;font-weight:700;color:#333">'+method+'</span>';
-      html += '</div>';
-      html += '<div class="pay-card-rows">';
-      html += '<div class="pay-card-row">👤 নাম: <span>'+o.name+'</span></div>';
-      html += '<div class="pay-card-row">📱 ফোন: <span><a href="tel:'+o.phone+'" style="color:var(--green)">'+o.phone+'</a></span></div>';
-      if(isFull){
-        html += '<div class="pay-card-row">🛍️ পণ্য মূল্য: <span>৳'+(base||total).toLocaleString()+'</span></div>';
-        html += '<div class="pay-card-row">🚚 ডেলিভারি: <span>৳'+dc+'</span></div>';
-      } else if(isDel){
-        html += '<div class="pay-card-row">🚚 ডেলিভারি চার্জ: <span style="color:#1565C0">৳'+dc+'</span></div>';
-        html += '<div class="pay-card-row">💵 বাকি টাকা: <span style="color:#E65100">ডেলিভারিতে</span></div>';
-      }
-      html += '<div class="pay-card-row">🕐 সময়: <span>'+(o.time||'').substring(0,16)+'</span></div>';
-      html += '<div class="pay-card-row">📦 স্ট্যাটাস: <span>'+o.status+'</span></div>';
-      html += '</div>';
-      // Cart items list
-      if(o.items && o.items.length > 1){
-        html += '<div style="background:#FFFDE7;border-radius:8px;padding:.4rem .7rem;margin-top:.45rem;font-size:.78rem">';
-        html += '<div style="font-weight:700;color:#A85C0A;margin-bottom:.25rem">🛒 কার্ট ('+o.items.length+'টি পণ্য)</div>';
-        o.items.forEach(function(item){
-          html += '<div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:1px solid #FFF9C4">';
-          html += '<span>'+(item.icon||'🍯')+' '+item.product+' × '+(item.qty||'')+' </span>';
-          html += '<span style="font-weight:700">৳'+Number(item.price||0).toLocaleString()+'</span>';
-          html += '</div>';
-        });
-        html += '</div>';
-      } else {
-        html += '<div class="pay-card-rows" style="margin-top:.3rem">';
-        html += '<div class="pay-card-row">🍯 পণ্য: <span>'+(o.items[0].icon||'')+(o.items[0].product||'')+'</span></div>';
-        html += '<div class="pay-card-row">📦 পরিমাণ: <span>'+(o.items[0].qty||'')+'</span></div>';
-        html += '</div>';
-      }
-      if(o.trxId){
-        html += '<div class="trx-display">';
-        html += '<span style="font-size:.72rem;color:#6A1B9A;font-weight:700">🔑 TrxID</span>';
-        html += '<span class="trx-display-id">'+o.trxId+'</span>';
-        html += '<button onclick="cpTrx(this)" data-trx="'+o.trxId+'" style="background:#B39DDB;color:white;border:none;border-radius:6px;padding:.2rem .5rem;font-size:.7rem;cursor:pointer">কপি</button>';
-        html += '</div>';
-      }
-      html += '</div>';
-    });
-  }
-  document.getElementById('pay-list-wrap').innerHTML = html;
-}
-
 function clearPayHistory(){
   showConfirmPop(
     '🗑️ History মুছবেন?',
@@ -1194,18 +1062,6 @@ function clearPayHistory(){
     }
   );
 }
-
-function showConfirmPop(title, msg, onYes){
-  var ov = document.getElementById('confirmPop');
-  document.getElementById('confirmTitle').innerHTML = title;
-  document.getElementById('confirmMsg').innerHTML = msg;
-  document.getElementById('confirmYes').onclick = function(){ hideConfirmPop(); onYes(); };
-  ov.classList.add('show');
-}
-function hideConfirmPop(){
-  document.getElementById('confirmPop').classList.remove('show');
-}
-
 function cpTrx(btn){
   var id=btn.getAttribute('data-trx');
   if(navigator.clipboard) navigator.clipboard.writeText(id);
