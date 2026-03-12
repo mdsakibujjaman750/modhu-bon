@@ -181,6 +181,23 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--bro
 .toast.show{transform:translateY(0);opacity:1}
 @media(max-width:900px){.stats-row{grid-template-columns:1fr 1fr}.sg{grid-template-columns:1fr}}
 @media(max-width:640px){.sidebar{width:200px}.main{margin-left:200px}}
+
+/* Digital Clock */
+.sb-clock{padding:.5rem 1.2rem .8rem;text-align:center;border-top:1px solid rgba(255,255,255,.08)}
+.clock-time{font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;color:var(--amber-l);letter-spacing:2px;text-shadow:0 0 10px rgba(212,130,26,.5)}
+.clock-date{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:.15rem;letter-spacing:.5px}
+@keyframes clockPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.clock-sep{animation:clockPulse 1s infinite}
+
+/* Date Filter */
+.date-filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.df-btn{background:var(--white);border:2px solid #E8D5B0;color:var(--brown-l);padding:.35rem .8rem;border-radius:20px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .25s}
+.df-btn:hover{border-color:var(--amber);color:var(--amber-d)}
+.df-btn.active{background:var(--amber);border-color:var(--amber-d);color:white}
+.df-custom{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.df-date-input{border:2px solid #E8D5B0;border-radius:8px;padding:.3rem .6rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--brown);outline:none;transition:border .25s}
+.df-date-input:focus{border-color:var(--amber)}
+.df-apply{background:var(--green);color:white;border:none;border-radius:8px;padding:.35rem .8rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -271,6 +288,10 @@ setTimeout(function(){
 <div class="wrap">
   <aside class="sidebar">
     <div class="sb-logo">🍯 মধুবন Admin</div>
+<div class="sb-clock">
+  <div class="clock-time" id="clockTime">০০<span class="clock-sep">:</span>০০<span class="clock-sep">:</span>০০</div>
+  <div class="clock-date" id="clockDate"></div>
+</div>
     <ul class="sb-menu">
       <li><div class="sb-item active" id="nav-orders" onclick="go('orders','nav-orders')">📦 অর্ডার তালিকা</div></li>
       <li><div class="sb-item" id="nav-analytics" onclick="go('analytics','nav-analytics')">📊 ড্যাশবোর্ড</div></li>
@@ -298,7 +319,20 @@ setTimeout(function(){
           <button class="amber-btn" onclick="loadOrders()">🔄 রিফ্রেশ</button>
         </div>
       </div>
-      <div class="stats-row" id="srow"></div>
+      <div class="date-filter-bar">
+  <button class="df-btn active" onclick="setDateFilter('today',this)">আজ</button>
+  <button class="df-btn" onclick="setDateFilter('7',this)">৭ দিন</button>
+  <button class="df-btn" onclick="setDateFilter('30',this)">৩০ দিন</button>
+  <button class="df-btn" onclick="setDateFilter('90',this)">৯০ দিন</button>
+  <button class="df-btn" onclick="setDateFilter('all',this)">সব</button>
+  <div class="df-custom">
+    <input type="date" class="df-date-input" id="dfFrom" placeholder="শুরু"/>
+    <span style="font-size:.75rem;color:var(--brown-l)">—</span>
+    <input type="date" class="df-date-input" id="dfTo" placeholder="শেষ"/>
+    <button class="df-apply" onclick="applyCustomDate()">✓</button>
+  </div>
+</div>
+<div class="stats-row" id="srow"></div>
       <div class="fbar">
         <input type="text" id="srch" placeholder="🔍 নাম, ফোন, পণ্য..." oninput="doFilter()"/>
         <select id="sflt" onchange="doFilter()">
@@ -557,14 +591,13 @@ function loadOrders(){
   window._fbOrdersCallback = function(orders){
     renderOrders(orders);
   };
-  if(window._fbOrders) renderOrders(window._fbOrders);
+  // Render immediately if data already loaded
+  if(window._fbOrders && window._fbOrders.length){
+    renderOrders(window._fbOrders);
+  }
 }
 
-function renderOrders(orders){
-  allOrd = orders;
-  renderStats(orders);
-  renderGroups(orders);
-}
+function renderOrders(orders){ allOrd=orders; renderStats(orders); renderGroups(orders); }
 
 function renderStats(orders){
   var tot = orders.length;
@@ -655,7 +688,8 @@ function doFilter(){
     var prodOk = (o.product||'').toLowerCase().indexOf(q) > -1;
     var textMatch = !q || nameOk || phoneOk || prodOk;
     var statusMatch = !s || o.status === s;
-    return textMatch && statusMatch;
+    var dateMatch = orderMatchesDate(o);
+    return textMatch && statusMatch && dateMatch;
   });
   renderStats(f);
   renderGroups(f);
@@ -1083,6 +1117,66 @@ function showOrderNotif(order){
   }
   setTimeout(function(){ el.style.transform='translateX(0)'; }, 10);
   setTimeout(function(){ el.style.transform='translateX(120%)'; }, 5000);
+}
+
+// ══ DIGITAL CLOCK ══
+function updateClock(){
+  var now = new Date();
+  var h = String(now.getHours()).padStart(2,'0');
+  var m = String(now.getMinutes()).padStart(2,'0');
+  var s = String(now.getSeconds()).padStart(2,'0');
+  var ct = document.getElementById('clockTime');
+  if(ct) ct.innerHTML = h+'<span class="clock-sep">:</span>'+m+'<span class="clock-sep">:</span>'+s;
+  var days = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+  var months = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+  var cd = document.getElementById('clockDate');
+  if(cd) cd.textContent = days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()];
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ══ DATE FILTER ══
+var _dfMode = 'today', _dfFrom = null, _dfTo = null;
+
+function setDateFilter(mode, btn){
+  _dfMode = mode; _dfFrom = null; _dfTo = null;
+  document.querySelectorAll('.df-btn').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  doFilter();
+}
+
+function applyCustomDate(){
+  var f = document.getElementById('dfFrom').value;
+  var t = document.getElementById('dfTo').value;
+  if(!f && !t) return;
+  _dfMode = 'custom'; _dfFrom = f; _dfTo = t;
+  document.querySelectorAll('.df-btn').forEach(function(b){ b.classList.remove('active'); });
+  doFilter();
+}
+
+function orderMatchesDate(o){
+  if(_dfMode === 'all') return true;
+  // Try to parse order time
+  var ts = o.created_at || o.time || '';
+  var d;
+  try{ d = new Date(ts); }catch(e){ return true; }
+  if(isNaN(d)) return true;
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if(_dfMode === 'today'){
+    var od = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return od.getTime() === today.getTime();
+  }
+  if(_dfMode === 'custom'){
+    var from = _dfFrom ? new Date(_dfFrom) : null;
+    var to = _dfTo ? new Date(_dfTo+'T23:59:59') : null;
+    if(from && d < from) return false;
+    if(to && d > to) return false;
+    return true;
+  }
+  var days = parseInt(_dfMode);
+  var cutoff = new Date(today.getTime() - (days-1)*24*60*60*1000);
+  return d >= cutoff;
 }
 
 </script>
