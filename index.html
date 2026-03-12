@@ -249,6 +249,46 @@ footer{background:var(--brown);color:rgba(255,255,255,.75);padding:2.5rem 4% 1.5
 .mo-empty span{display:block;font-size:3rem;margin-bottom:.7rem}
 .mo-hint{font-size:.8rem;color:var(--brown-l);text-align:center;margin-bottom:1rem;padding:.6rem;background:var(--cream);border-radius:8px}
 @media(max-width:700px){.nav-links{display:none}.hero::after{display:none}.foot-grid{grid-template-columns:1fr}.contact-info{grid-template-columns:1fr}.form-row2{grid-template-columns:1fr}.arf-grid{grid-template-columns:1fr}}
+
+/* Phone error */
+.phone-err{display:none;color:#C0392B;font-size:.73rem;margin-top:.2rem}
+/* Payment info */
+.pay-info-box{display:none;background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-radius:12px;padding:.75rem 1rem;margin:.5rem 0;border-left:4px solid #2D5A27;animation:fadeUp .3s ease}
+.pay-info-box .pay-method{font-size:.8rem;font-weight:700;color:#2D5A27;margin-bottom:.2rem}
+.pay-info-box .pay-num{font-size:1.05rem;font-weight:700;color:#1A3A15;letter-spacing:1px}
+.pay-info-box .pay-note{font-size:.7rem;color:#3A7A30;margin-top:.2rem}
+/* Payment toggle button */
+.pay-toggle-row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+.pay-tog-btn{flex:1;min-width:80px;background:var(--white);border:2px solid #E8D5B0;color:var(--brown-l);border-radius:10px;padding:.5rem .4rem;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .25s;text-align:center}
+.pay-tog-btn:hover{border-color:var(--amber);color:var(--amber-d)}
+.pay-tog-btn.active{background:var(--amber);border-color:var(--amber-d);color:white}
+/* Address row */
+.addr-row{display:flex;gap:.6rem;margin-bottom:.6rem}
+.addr-row .fg{flex:1}
+/* Order success popup */
+.ord-success-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s}
+.ord-success-overlay.show{opacity:1;pointer-events:all}
+.ord-success-box{background:linear-gradient(135deg,#2D5A27,#4A8C3F);color:white;border-radius:28px;padding:2.5rem 2rem;text-align:center;max-width:300px;width:88%;transform:scale(.4) rotate(-8deg);transition:transform .5s cubic-bezier(.34,1.56,.64,1);box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.ord-success-overlay.show .ord-success-box{transform:scale(1) rotate(0)}
+.ord-success-icon{font-size:4rem;display:block;animation:iconBounce .7s .2s both}
+@keyframes iconBounce{0%{transform:scale(0) rotate(-20deg)}70%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+.ord-success-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin:.5rem 0 .3rem}
+.ord-success-msg{font-size:.88rem;line-height:1.7;opacity:.92}
+
+.pay-tog-btn{flex:1;min-width:100px !important;font-size:.77rem !important}
+#oTrxId:focus{border-color:var(--green) !important;box-shadow:0 0 0 3px rgba(45,90,39,.1)}
+
+.pay-sub-btn{flex:1;background:white;border:2px solid #E8D5B0;color:var(--brown-l);border-radius:9px;padding:.42rem .3rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .22s;text-align:center}
+.pay-sub-btn:hover{border-color:var(--amber)}
+.pay-sub-btn.active{background:var(--amber);border-color:var(--amber-d);color:white}
+
+.pay-icon{height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;margin-right:.3rem;vertical-align:middle;line-height:1}
+.bkash-icon{background:#E2136E;color:white}
+.nagad-icon{background:#F05829;color:white}
+.rocket-icon{background:#8332AC;color:white}
+
+.copy-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A3A15;color:white;padding:.35rem .9rem;border-radius:20px;font-size:.75rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;pointer-events:none;opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:99999;white-space:nowrap}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -268,34 +308,34 @@ const db = getDatabase(app);
 window._fbDB = db;
 window._fbRef = ref;
 window._fbPush = push;
+window._fbOnValue = onValue;
 window._fbSet = set;
 window._fbGet = get;
-window._fbOnValue = onValue;
 window._firebaseReady = true;
 
 function applyFB(){
-  if(!window._pageReady){ setTimeout(applyFB, 100); return; }
-  try{ applyWebSettings(); }catch(e){}
-  try{ renderProducts(); }catch(e){}
-  try{ renderSB(); }catch(e){}
-  try{ renderReviews(); }catch(e){}
+  if(!window._pageReady) return;
+  applyWebSettings();
+  renderProducts();
+  renderSB();
+  renderReviews();
 }
 
-// Real-time — যেকোনো change হলে সব device এ সাথে সাথে update
+// Real-time listeners - fires immediately on load AND on every change
 onValue(ref(db,'products'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbProducts=Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){ var d=s.val(); window._fbProducts = Array.isArray(d)?d:Object.values(d); }
   applyFB();
 });
 onValue(ref(db,'sbproducts'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbSBProducts=Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){ var d=s.val(); window._fbSBProducts = Array.isArray(d)?d:Object.values(d); }
   applyFB();
 });
 onValue(ref(db,'reviews'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbReviews=Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){ var d=s.val(); window._fbReviews = Array.isArray(d)?d:Object.values(d); }
   applyFB();
 });
 onValue(ref(db,'settings'), function(s){
-  if(s.exists()) window._fbSettings=s.val();
+  if(s.exists()) window._fbSettings = s.val();
   applyFB();
 });
 </script>
@@ -444,17 +484,125 @@ onValue(ref(db,'settings'), function(s){
     <div class="modal-head"><h3>🛒 অর্ডার ফর্ম</h3><button class="close-x" onclick="closeOrder()">✕</button></div>
     <div class="sel-prod"><span class="sp-icon" id="spIcon">🍯</span><div><h4 id="spName"></h4><p id="spPrice"></p></div></div>
     <div id="cartSummaryBox"></div>
+
     <div class="form-row2">
-      <div class="fg"><label>আপনার নাম ★</label><input type="text" id="oName" placeholder="পূর্ণ নাম"/></div>
-      <div class="fg"><label>মোবাইল নম্বর ★</label><input type="tel" id="oPhone" placeholder="01XXXXXXXXX"/></div>
+      <div class="fg">
+        <label>আপনার নাম ★</label>
+        <input type="text" id="oName" placeholder="পূর্ণ নাম"/>
+      </div>
+      <div class="fg">
+        <label>মোবাইল নম্বর ★</label>
+        <input type="tel" id="oPhone" placeholder="01XXXXXXXXX" oninput="chkPhone(this)"/>
+        <div class="phone-err" id="phoneErr">⚠️ সঠিক নম্বর দিন (01XXXXXXXXX)</div>
+      </div>
     </div>
-    <div class="form-row2">
-      <div class="fg" id="qtyBox"><label>পরিমাণ</label><select id="oQty"><option value="500g">৫০০ গ্রাম</option><option value="1kg" selected>১ কেজি</option><option value="2kg">২ কেজি</option><option value="5kg">৫ কেজি</option></select></div>
-      <div class="fg"><label>পেমেন্ট পদ্ধতি</label><select id="oPayment"><option>ক্যাশ অন ডেলিভারি</option><option>বিকাশ</option><option>নগদ</option><option>রকেট</option></select></div>
+
+    <div class="fg" id="qtyBox" style="margin-bottom:.7rem">
+      <label>পরিমাণ</label>
+      <select id="oQty">
+        <option value="500g">৫০০ গ্রাম</option>
+        <option value="1kg" selected>১ কেজি</option>
+        <option value="2kg">২ কেজি</option>
+        <option value="5kg">৫ কেজি</option>
+      </select>
     </div>
-    <div class="fg"><label>ডেলিভারি ঠিকানা ★</label><textarea id="oAddress" placeholder="সম্পূর্ণ ঠিকানা (বাড়ি, রাস্তা, থানা, জেলা)"></textarea></div>
+
+    <div class="fg" style="margin-bottom:.4rem">
+      <label>পেমেন্ট পদ্ধতি ★</label>
+      <div class="pay-toggle-row">
+        <button class="pay-tog-btn active" id="btnCOD" onclick="selMainPay('cod',this)">💵 ক্যাশ অন ডেলিভারি</button>
+        <button class="pay-tog-btn" id="btnOnline" onclick="selMainPay('online',this)">📲 অনলাইন পেমেন্ট</button>
+      </div>
+      <input type="hidden" id="oPayment" value="ক্যাশ অন ডেলিভারি"/>
+      <input type="hidden" id="oPayMode" value="cod"/>
+    </div>
+
+    <!-- COD box -->
+    <div id="codBox" style="border-radius:14px;overflow:hidden;margin-bottom:.7rem">
+      <div style="background:linear-gradient(135deg,#FFF8E1,#FFF3CD);border:2px solid #E8D5B0;border-radius:14px;padding:.8rem 1rem">
+        <div style="font-size:.8rem;font-weight:700;color:#A85C0A;margin-bottom:.5rem">🚚 ডেলিভারি চার্জ পরিশোধ করুন</div>
+        <div style="display:flex;gap:.7rem;margin-bottom:.5rem">
+          <div style="flex:1;background:white;border-radius:10px;padding:.5rem;text-align:center">
+            <div style="font-size:.68rem;color:#6B3A1F">সাতক্ষীরার ভেতরে</div>
+            <div style="font-size:1.05rem;font-weight:700;color:#2D5A27">৳৬০</div>
+          </div>
+          <div style="flex:1;background:white;border-radius:10px;padding:.5rem;text-align:center">
+            <div style="font-size:.68rem;color:#6B3A1F">সাতক্ষীরার বাইরে</div>
+            <div style="font-size:1.05rem;font-weight:700;color:#C0392B">৳১২০</div>
+          </div>
+        </div>
+        <div style="font-size:.75rem;color:#6B3A1F;margin-bottom:.6rem">ডেলিভারি চার্জ অগ্রিম পাঠান — বাকি টাকা পণ্য পেলে দিন</div>
+        <!-- COD online method buttons -->
+        <div style="font-size:.75rem;font-weight:700;color:#A85C0A;margin-bottom:.35rem">কোন মাধ্যমে পাঠাবেন?</div>
+        <div class="pay-toggle-row" style="margin:0 0 .5rem">
+          <button class="pay-sub-btn active" onclick="selSubPay('বিকাশ (ডেলিভারি)',this,'cod')"><span class="pay-icon bkash-icon" style="font-size:.65rem;font-weight:900;letter-spacing:-.5px">bKash</span>বিকাশ</button>
+          <button class="pay-sub-btn" onclick="selSubPay('নগদ (ডেলিভারি)',this,'cod')"><span class="pay-icon nagad-icon" style="font-size:.65rem;font-weight:900">নগদ</span>নগদ</button>
+          <button class="pay-sub-btn" onclick="selSubPay('রকেট (ডেলিভারি)',this,'cod')"><span class="pay-icon rocket-icon" style="font-size:.7rem;font-weight:900">🚀</span>রকেট</button>
+        </div>
+        <!-- Number + copy -->
+        <div style="display:flex;align-items:center;gap:.6rem;background:white;border-radius:10px;padding:.5rem .8rem;margin-bottom:.4rem">
+          <span style="font-size:.95rem;font-weight:700;color:#1A3A15;flex:1">📱 01747401484</span>
+          <button onclick="copyNum('copyBtnCOD')" id="copyBtnCOD" style="background:var(--amber);color:white;border:none;border-radius:6px;padding:.2rem .55rem;font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.3px">Copy</button>
+        </div>
+        <div id="codChargeInfo" style="display:none;background:white;border-radius:8px;padding:.4rem .7rem;font-size:.8rem;font-weight:700;color:#D4821A;text-align:center;margin-bottom:.4rem"></div>
+        <label style="font-size:.76rem;font-weight:700;color:#A85C0A;display:block;margin-bottom:.28rem">TrxID / ট্রানজেকশন নম্বর ★</label>
+        <input type="text" id="oTrxId" placeholder="যেমন: 8GH2KL9M" style="width:100%;border:2px solid #F5C842;border-radius:8px;padding:.42rem .7rem;font-family:'Hind Siliguri',sans-serif;font-size:.86rem;outline:none;transition:border .2s"/>
+        
+      </div>
+    </div>
+
+    <!-- Full payment box -->
+    <div id="fullPayBox" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:.7rem">
+      <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border:2px solid #A5D6A7;border-radius:14px;padding:.8rem 1rem">
+        <div style="font-size:.8rem;font-weight:700;color:#2D5A27;margin-bottom:.5rem">💳 সম্পূর্ণ পেমেন্ট (পণ্য + ডেলিভারি)</div>
+        <!-- Full online method buttons -->
+        <div class="pay-toggle-row" style="margin:0 0 .5rem">
+          <button class="pay-sub-btn active" onclick="selSubPay('বিকাশ (ফুল)',this,'full')"><span class="pay-icon bkash-icon" style="font-size:.65rem;font-weight:900;letter-spacing:-.5px">bKash</span>বিকাশ</button>
+          <button class="pay-sub-btn" onclick="selSubPay('নগদ (ফুল)',this,'full')"><span class="pay-icon nagad-icon" style="font-size:.65rem;font-weight:900">নগদ</span>নগদ</button>
+          <button class="pay-sub-btn" onclick="selSubPay('রকেট (ফুল)',this,'full')"><span class="pay-icon rocket-icon" style="font-size:.7rem;font-weight:900">🚀</span>রকেট</button>
+        </div>
+        <!-- Number + copy -->
+        <div style="display:flex;align-items:center;gap:.6rem;background:white;border-radius:10px;padding:.5rem .8rem;margin-bottom:.4rem">
+          <span style="font-size:.95rem;font-weight:700;color:#1A3A15;flex:1">📱 01747401484</span>
+          <button onclick="copyNum('copyBtnFull')" id="copyBtnFull" style="background:#2D5A27;color:white;border:none;border-radius:6px;padding:.2rem .55rem;font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.3px">Copy</button>
+        </div>
+        <div id="fullTotalInfo" style="display:none;background:white;border-radius:8px;padding:.4rem .7rem;font-size:.8rem;font-weight:700;color:#2D5A27;text-align:center;margin-bottom:.4rem"></div>
+        <label style="font-size:.76rem;font-weight:700;color:#2D5A27;display:block;margin-bottom:.28rem">TrxID / ট্রানজেকশন নম্বর ★</label>
+        <input type="text" id="oTrxIdFull" placeholder="যেমন: 8GH2KL9M" style="width:100%;border:2px solid #A5D6A7;border-radius:8px;padding:.42rem .7rem;font-family:'Hind Siliguri',sans-serif;font-size:.86rem;outline:none;transition:border .2s"/>
+        
+      </div>
+    </div>
+
+    <div class="addr-row">
+      <div class="fg">
+        <label>জেলা ★</label>
+        <select id="oDistrict" onchange="onDistrictChange()">
+          <option value="">— জেলা বেছে নিন —</option><option value="কক্সবাজার">কক্সবাজার</option><option value="কিশোরগঞ্জ">কিশোরগঞ্জ</option><option value="কুড়িগ্রাম">কুড়িগ্রাম</option><option value="কুমিল্লা">কুমিল্লা</option><option value="কুষ্টিয়া">কুষ্টিয়া</option><option value="খাগড়াছড়ি">খাগড়াছড়ি</option><option value="খুলনা">খুলনা</option><option value="গাইবান্ধা">গাইবান্ধা</option><option value="গাজীপুর">গাজীপুর</option><option value="গোপালগঞ্জ">গোপালগঞ্জ</option><option value="চট্টগ্রাম">চট্টগ্রাম</option><option value="চাঁদপুর">চাঁদপুর</option><option value="চাঁপাইনবাবগঞ্জ">চাঁপাইনবাবগঞ্জ</option><option value="চুয়াডাঙ্গা">চুয়াডাঙ্গা</option><option value="জয়পুরহাট">জয়পুরহাট</option><option value="জামালপুর">জামালপুর</option><option value="ঝালকাঠি">ঝালকাঠি</option><option value="ঝিনাইদহ">ঝিনাইদহ</option><option value="টাঙ্গাইল">টাঙ্গাইল</option><option value="ঠাকুরগাঁও">ঠাকুরগাঁও</option><option value="ঢাকা">ঢাকা</option><option value="দিনাজপুর">দিনাজপুর</option><option value="নওগাঁ">নওগাঁ</option><option value="নড়াইল">নড়াইল</option><option value="নরসিংদী">নরসিংদী</option><option value="নাটোর">নাটোর</option><option value="নারায়ণগঞ্জ">নারায়ণগঞ্জ</option><option value="নীলফামারী">নীলফামারী</option><option value="নেত্রকোনা">নেত্রকোনা</option><option value="নোয়াখালী">নোয়াখালী</option><option value="পঞ্চগড়">পঞ্চগড়</option><option value="পটুয়াখালী">পটুয়াখালী</option><option value="পাবনা">পাবনা</option><option value="পিরোজপুর">পিরোজপুর</option><option value="ফরিদপুর">ফরিদপুর</option><option value="ফেনী">ফেনী</option><option value="বগুড়া">বগুড়া</option><option value="বরগুনা">বরগুনা</option><option value="বরিশাল">বরিশাল</option><option value="বাগেরহাট">বাগেরহাট</option><option value="বান্দরবান">বান্দরবান</option><option value="ব্রাহ্মণবাড়িয়া">ব্রাহ্মণবাড়িয়া</option><option value="ভোলা">ভোলা</option><option value="ময়মনসিংহ">ময়মনসিংহ</option><option value="মাগুরা">মাগুরা</option><option value="মাদারীপুর">মাদারীপুর</option><option value="মানিকগঞ্জ">মানিকগঞ্জ</option><option value="মুন্সীগঞ্জ">মুন্সীগঞ্জ</option><option value="মেহেরপুর">মেহেরপুর</option><option value="মৌলভীবাজার">মৌলভীবাজার</option><option value="যশোর">যশোর</option><option value="রংপুর">রংপুর</option><option value="রাঙ্গামাটি">রাঙ্গামাটি</option><option value="রাজবাড়ী">রাজবাড়ী</option><option value="রাজশাহী">রাজশাহী</option><option value="লক্ষ্মীপুর">লক্ষ্মীপুর</option><option value="লালমনিরহাট">লালমনিরহাট</option><option value="শরীয়তপুর">শরীয়তপুর</option><option value="শেরপুর">শেরপুর</option><option value="সাতক্ষীরা">সাতক্ষীরা</option><option value="সিরাজগঞ্জ">সিরাজগঞ্জ</option><option value="সিলেট">সিলেট</option><option value="সুনামগঞ্জ">সুনামগঞ্জ</option><option value="হবিগঞ্জ">হবিগঞ্জ</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>উপজেলা / থানা ★</label>
+        <select id="oUpazila" onchange="updDeliveryCharge()">
+          <option value="">— আগে জেলা বেছে নিন —</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label>সম্পূর্ণ ঠিকানা ★</label>
+      <textarea id="oAddress" placeholder="বাড়ি নং, রাস্তা, গ্রাম / মহল্লা..." rows="2"></textarea>
+    </div>
+
     <div class="fg"><label>বিশেষ নির্দেশনা</label><input type="text" id="oNote" placeholder="কোনো বার্তা থাকলে লিখুন..."/></div>
     <button class="submit-btn" onclick="submitOrder()">🚀 অর্ডার নিশ্চিত করুন</button>
+  </div>
+</div>
+
+<!-- SUCCESS POPUP -->
+<div class="ord-success-overlay" id="ordSuccessOv">
+  <div class="ord-success-box">
+    <span class="ord-success-icon">✅</span>
+    <div class="ord-success-title">অর্ডার নিশ্চিত!</div>
+    <div class="ord-success-msg">অর্ডার করার জন্য ধন্যবাদ!<br/>কিছুক্ষণের মধ্যে আপনাকে কল করা হবে।<br/><br/>🍯 মধুবন</div>
   </div>
 </div>
 
@@ -510,24 +658,26 @@ var DEFAULT_REVIEWS=[
 // STORAGE HELPERS
 // ══════════════════════════════════════
 function getProducts(){
-  if(window._fbProducts && window._fbProducts.length) return window._fbProducts;
-  return DEFAULTS;
+  if(window._fbProducts) return window._fbProducts;
+  try{var s=localStorage.getItem('modhu_products');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}
 }
 function getSBProducts(){
-  if(window._fbSBProducts && window._fbSBProducts.length) return window._fbSBProducts;
-  return SB_DEFAULTS;
+  if(window._fbSBProducts) return window._fbSBProducts;
+  try{var s=localStorage.getItem('modhu_sb_products');return s?JSON.parse(s):SB_DEFAULTS;}catch(e){return SB_DEFAULTS;}
 }
 function getReviews(){
-  if(window._fbReviews && window._fbReviews.length) return window._fbReviews;
-  return DEFAULT_REVIEWS;
+  if(window._fbReviews) return window._fbReviews;
+  try{var s=localStorage.getItem('modhu_reviews');return s?JSON.parse(s):DEFAULT_REVIEWS;}catch(e){return DEFAULT_REVIEWS;}
 }
 function setReviews(a){
-  if(window._firebaseReady && window._fbDB)
-    window._fbSet(window._fbRef(window._fbDB,'reviews'), a);
-  localStorage.setItem('modhu_reviews', JSON.stringify(a));
+  window._fbReviews = a;
+  if(window._firebaseReady && window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB, 'reviews'), a);
+  }
+  localStorage.setItem('modhu_reviews',JSON.stringify(a));
 }
 function getWS(key,fallback){
-  var src=window._fbSettings||{};
+  var src = window._fbSettings || (function(){try{var s=localStorage.getItem('modhu_websettings');return s?JSON.parse(s):{};}catch(e){return{};}})();
   return src[key]||fallback;
 }
 
@@ -547,7 +697,7 @@ function renderProducts(filter){
     html+='<div class="prod-card" style="animation-delay:'+(i*.07)+'s">'
       +badge
       +'<div class="prod-img" style="background:linear-gradient(135deg,'+(p.bg||'#FFF8E1,#FFF3CD')+')">'+p.icon+'</div>'
-      +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+(p.description||p.desc||'')+'</p>'
+      +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+p.desc+'</p>'
       +'<div class="prod-bottom">'
       +'<div class="prod-price">৳'+Number(p.price).toLocaleString()+' <span>/কেজি</span></div>'
       +'<div class="prod-actions">'
@@ -564,7 +714,7 @@ function renderSB(){
     var p=prods[i];
     html+='<div class="sb-card" style="animation-delay:'+(i*.08)+'s">'
       +'<div class="icon">'+p.icon+'</div>'
-      +'<h4>'+p.name+'</h4><p>'+(p.description||p.desc||'')+'</p>'
+      +'<h4>'+p.name+'</h4><p>'+p.desc+'</p>'
       +'<div class="sb-price">৳ '+Number(p.price).toLocaleString()+'</div>'
       +'<div class="sb-btns">'
       +'<button class="btn-cart" data-id="'+p.id+'" data-name="'+encodeURIComponent(p.name)+'" data-price="'+p.price+'" data-icon="'+encodeURIComponent(p.icon)+'" onclick="handleCartBtn(this)">🛒 কার্ট</button>'
@@ -747,38 +897,243 @@ function checkoutCart(){
   closeCart();document.getElementById('orderModal').classList.add('open');
 }
 function closeOrder(){document.getElementById('orderModal').classList.remove('open');}
+function chkPhone(inp){
+  var v=inp.value.replace(/\s/g,'');
+  var err=document.getElementById('phoneErr');
+  if(err) err.style.display=(!v||/^01[3-9]\d{8}$/.test(v))?'none':'block';
+}
+
+// Upazila data
+var UPAZILAS = {
+  'ঢাকা':['সাভার','কেরানীগঞ্জ','নবাবগঞ্জ','দোহার','ধামরাই','ডেমরা','মিরপুর','উত্তরা','গুলশান','তেজগাঁও'],
+  'চট্টগ্রাম':['আনোয়ারা','বাঁশখালী','বোয়ালখালী','চন্দনাইশ','ফটিকছড়ি','হাটহাজারী','কর্ণফুলী','লোহাগড়া','মিরসরাই','পটিয়া','রাউজান','রাঙ্গুনিয়া','সন্দ্বীপ','সাতকানিয়া','সীতাকুণ্ড'],
+  'রাজশাহী':['বাগমারা','চারঘাট','দুর্গাপুর','গোদাগাড়ী','মোহনপুর','পবা','পুঠিয়া','তানোর'],
+  'খুলনা':['বটিয়াঘাটা','দাকোপ','ডুমুরিয়া','ফুলতলা','কয়রা','পাইকগাছা','রূপসা','তেরখাদা'],
+  'বরিশাল':['আগৈলঝাড়া','বাবুগঞ্জ','বাকেরগঞ্জ','বানারীপাড়া','গৌরনদী','হিজলা','মেহেন্দিগঞ্জ','মুলাদী','উজিরপুর'],
+  'সিলেট':['বালাগঞ্জ','বিয়ানীবাজার','বিশ্বনাথ','ছাতক','দক্ষিণ সুরমা','ফেঞ্চুগঞ্জ','গোলাপগঞ্জ','গোয়াইনঘাট','জৈন্তাপুর','কানাইঘাট','কোম্পানীগঞ্জ','ওসমানীনগর'],
+  'রংপুর':['বদরগঞ্জ','গঙ্গাচড়া','কাউনিয়া','মিঠাপুকুর','পীরগাছা','পীরগঞ্জ','তারাগঞ্জ'],
+  'ময়মনসিংহ':['ভালুকা','ধোবাউড়া','ফুলপুর','গফরগাঁও','গৌরীপুর','হালুয়াঘাট','ঈশ্বরগঞ্জ','মুক্তাগাছা','নান্দাইল','ফুলবাড়িয়া','তারাকান্দা','ত্রিশাল'],
+  'কুমিল্লা':['বরুড়া','ব্রাহ্মণপাড়া','বুড়িচং','চান্দিনা','চৌদ্দগ্রাম','দাউদকান্দি','দেবিদ্বার','হোমনা','লাকসাম','লালমাই','মনোহরগঞ্জ','মেঘনা','মুরাদনগর','নাঙ্গলকোট','তিতাস'],
+  'সাতক্ষীরা':['আশাশুনি','দেবহাটা','কালিগঞ্জ','কলারোয়া','সাতক্ষীরা সদর','শ্যামনগর','তালা'],
+  'যশোর':['অভয়নগর','বাঘারপাড়া','চৌগাছা','ঝিকরগাছা','কেশবপুর','মণিরামপুর','শার্শা'],
+  'খাগড়াছড়ি':['দীঘিনালা','খাগড়াছড়ি সদর','লক্ষ্মীছড়ি','মাটিরাঙ্গা','মানিকছড়ি','মহালছড়ি','পানছড়ি','রামগড়'],
+  'কক্সবাজার':['চকরিয়া','কক্সবাজার সদর','কুতুবদিয়া','মহেশখালী','পেকুয়া','রামু','টেকনাফ','উখিয়া'],
+  'গাজীপুর':['কালিয়াকৈর','কালীগঞ্জ','কাপাসিয়া','শ্রীপুর','টঙ্গী'],
+  'নারায়ণগঞ্জ':['আড়াইহাজার','বন্দর','নারায়ণগঞ্জ সদর','রূপগঞ্জ','সোনারগাঁ'],
+  'টাঙ্গাইল':['বাসাইল','ভূঞাপুর','দেলদুয়ার','ধনবাড়ী','ঘাটাইল','গোপালপুর','কালিহাতী','মধুপুর','মির্জাপুর','নাগরপুর','সখীপুর','টাঙ্গাইল সদর'],
+  'বগুড়া':['আদমদীঘি','বগুড়া সদর','ধুনট','দুপচাঁচিয়া','গাবতলী','কাহালু','নন্দীগ্রাম','শাহজাহানপুর','শেরপুর','শিবগঞ্জ','সোনাতলা'],
+  'নোয়াখালী':['বেগমগঞ্জ','চাটখিল','কোম্পানীগঞ্জ','হাতিয়া','কবিরহাট','লক্ষ্মীপুর','নোয়াখালী সদর','সেনবাগ','সুধারাম'],
+  'ফেনী':['ছাগলনাইয়া','দাগনভূঁইয়া','ফেনী সদর','ফুলগাজী','পরশুরাম','সোনাগাজী'],
+  'ব্রাহ্মণবাড়িয়া':['আখাউড়া','বাঞ্ছারামপুর','বিজয়নগর','ব্রাহ্মণবাড়িয়া সদর','কসবা','নাসিরনগর','নবীনগর','সরাইল'],
+  'চাঁদপুর':['চাঁদপুর সদর','ফরিদগঞ্জ','হাজীগঞ্জ','হাইমচর','কচুয়া','মতলব উত্তর','মতলব দক্ষিণ','শাহরাস্তি'],
+  'পাবনা':['আটঘরিয়া','বেড়া','ভাঙ্গুড়া','চাটমোহর','ফরিদপুর','ঈশ্বরদী','পাবনা সদর','সাঁথিয়া','সুজানগর'],
+  'নাটোর':['বাগাতিপাড়া','বড়াইগ্রাম','গুরুদাসপুর','লালপুর','নাটোর সদর','সিংড়া'],
+  'কুষ্টিয়া':['ভেড়ামারা','দৌলতপুর','খোকসা','কুমারখালী','কুষ্টিয়া সদর','মিরপুর'],
+  'ঝিনাইদহ':['হরিণাকুণ্ডু','ঝিনাইদহ সদর','কালীগঞ্জ','কোটচাঁদপুর','মহেশপুর','শৈলকুপা'],
+  'মাগুরা':['মাগুরা সদর','মহম্মদপুর','শালিখা','শ্রীপুর'],
+  'নড়াইল':['কালিয়া','লোহাগড়া','নড়াইল সদর'],
+  'বাগেরহাট':['বাগেরহাট সদর','চিতলমারী','ফকিরহাট','কচুয়া','মোরেলগঞ্জ','মোল্লাহাট','মোংলা','রামপাল','শরণখোলা'],
+  'মেহেরপুর':['গাংনী','মেহেরপুর সদর','মুজিবনগর'],
+  'চুয়াডাঙ্গা':['আলমডাঙ্গা','চুয়াডাঙ্গা সদর','দামুড়হুদা','জীবননগর'],
+  'সিরাজগঞ্জ':['বেলকুচি','চৌহালী','কাজীপুর','রায়গঞ্জ','শাহজাদপুর','সিরাজগঞ্জ সদর','তাড়াশ','উল্লাপাড়া'],
+  'জয়পুরহাট':['আক্কেলপুর','জয়পুরহাট সদর','কালাই','ক্ষেতলাল','পাঁচবিবি'],
+  'নওগাঁ':['আত্রাই','বদলগাছী','ধামইরহাট','মহাদেবপুর','মান্দা','নওগাঁ সদর','নিয়ামতপুর','পত্নীতলা','পোরশা','রানীনগর','সাপাহার'],
+  'চাঁপাইনবাবগঞ্জ':['ভোলাহাট','গোমস্তাপুর','নাচোল','চাঁপাইনবাবগঞ্জ সদর','শিবগঞ্জ'],
+  'রংপুর':['বদরগঞ্জ','গঙ্গাচড়া','কাউনিয়া','মিঠাপুকুর','পীরগাছা','পীরগঞ্জ','রংপুর সদর','তারাগঞ্জ'],
+  'গাইবান্ধা':['ফুলছড়ি','গাইবান্ধা সদর','গোবিন্দগঞ্জ','পলাশবাড়ী','সাদুল্লাপুর','সাঘাটা','সুন্দরগঞ্জ'],
+  'কুড়িগ্রাম':['ভূরুঙ্গামারী','চর রাজিবপুর','চিলমারী','ফুলবাড়ী','কুড়িগ্রাম সদর','নাগেশ্বরী','রাজারহাট','রৌমারী','উলিপুর'],
+  'নীলফামারী':['ডিমলা','ডোমার','জলঢাকা','কিশোরগঞ্জ','নীলফামারী সদর','সৈয়দপুর'],
+  'লালমনিরহাট':['আদিতমারী','হাতীবান্ধা','কালীগঞ্জ','লালমনিরহাট সদর','পাটগ্রাম'],
+  'পঞ্চগড়':['আটোয়ারী','বোদা','দেবীগঞ্জ','পঞ্চগড় সদর','তেতুলিয়া'],
+  'ঠাকুরগাঁও':['বালিয়াডাঙ্গী','হরিপুর','পীরগঞ্জ','রাণীশংকৈল','ঠাকুরগাঁও সদর'],
+  'দিনাজপুর':['বিরামপুর','বিরল','বোচাগঞ্জ','চিরিরবন্দর','দিনাজপুর সদর','ঘোড়াঘাট','হাকিমপুর','কাহারোল','খানসামা','নবাবগঞ্জ','পার্বতীপুর'],
+  'সুনামগঞ্জ':['বিশ্বম্ভরপুর','ছাতক','দিরাই','দোয়ারাবাজার','জগন্নাথপুর','জামালগঞ্জ','শাল্লা','সুনামগঞ্জ সদর','তাহিরপুর'],
+  'মৌলভীবাজার':['বড়লেখা','জুড়ী','কমলগঞ্জ','কুলাউড়া','মৌলভীবাজার সদর','রাজনগর','শ্রীমঙ্গল'],
+  'হবিগঞ্জ':['আজমিরীগঞ্জ','বাহুবল','বানিয়াচং','চুনারুঘাট','হবিগঞ্জ সদর','লাখাই','মাধবপুর','নবীগঞ্জ'],
+  'নেত্রকোনা':['আটপাড়া','বারহাট্টা','দুর্গাপুর','কেন্দুয়া','খালিয়াজুরী','কলমাকান্দা','মদন','মোহনগঞ্জ','নেত্রকোনা সদর','পূর্বধলা'],
+  'শেরপুর':['ঝিনাইগাতী','নকলা','নালিতাবাড়ী','শেরপুর সদর','শ্রীবরদী'],
+  'জামালপুর':['বকশীগঞ্জ','দেওয়ানগঞ্জ','ইসলামপুর','জামালপুর সদর','মাদারগঞ্জ','মেলান্দহ','সরিষাবাড়ী'],
+  'পটুয়াখালী':['বাউফল','দশমিনা','গলাচিপা','কলাপাড়া','মির্জাগঞ্জ','পটুয়াখালী সদর','রাঙ্গাবালী'],
+  'পিরোজপুর':['ভাণ্ডারিয়া','কাউখালী','মঠবাড়িয়া','নাজিরপুর','নেছারাবাদ','পিরোজপুর সদর','জিয়ানগর'],
+  'ঝালকাঠি':['কাঁঠালিয়া','নলছিটি','রাজাপুর','ঝালকাঠি সদর'],
+  'ভোলা':['বোরহানউদ্দিন','চরফ্যাশন','দৌলতখান','লালমোহন','মনপুরা','তজুমদ্দিন','ভোলা সদর'],
+  'বরগুনা':['আমতলী','বামনা','বরগুনা সদর','বেতাগী','পাথরঘাটা','তালতলী'],
+  'বরিশাল':['আগৈলঝাড়া','বাবুগঞ্জ','বাকেরগঞ্জ','বানারীপাড়া','গৌরনদী','হিজলা','মেহেন্দিগঞ্জ','মুলাদী','উজিরপুর','বরিশাল সদর'],
+  'ফরিদপুর':['আলফাডাঙ্গা','বোয়ালমারী','চরভদ্রাসন','ফরিদপুর সদর','মধুখালী','নগরকান্দা','সদরপুর','সালথা'],
+  'গোপালগঞ্জ':['কাশিয়ানী','কোটালীপাড়া','মুকসুদপুর','রাজৈর','টুঙ্গিপাড়া','গোপালগঞ্জ সদর'],
+  'মাদারীপুর':['কালকিনি','মাদারীপুর সদর','রাজৈর','শিবচর'],
+  'রাজবাড়ী':['বালিয়াকান্দি','গোয়ালন্দ','পাংশা','রাজবাড়ী সদর'],
+  'শরীয়তপুর':['ডামুড্যা','গোসাইরহাট','জাজিরা','নড়িয়া','শরীয়তপুর সদর','ভেদরগঞ্জ'],
+  'মানিকগঞ্জ':['দৌলতপুর','ঘিওর','হরিরামপুর','মানিকগঞ্জ সদর','সাটুরিয়া','শিবালয়','সিংগাইর'],
+  'মুন্সীগঞ্জ':['গজারিয়া','লৌহজং','মুন্সীগঞ্জ সদর','শ্রীনগর','সিরাজদিখান','টঙ্গীবাড়ী'],
+  'নরসিংদী':['বেলাব','মনোহরদী','নরসিংদী সদর','পলাশ','রায়পুরা','শিবপুর'],
+  'কিশোরগঞ্জ':['অষ্টগ্রাম','বাজিতপুর','ভৈরব','হোসেনপুর','ইটনা','করিমগঞ্জ','কটিয়াদী','কিশোরগঞ্জ সদর','কুলিয়ারচর','মিঠামইন','নিকলী','পাকুন্দিয়া','তাড়াইল'],
+  'লক্ষ্মীপুর':['কমলনগর','লক্ষ্মীপুর সদর','রামগঞ্জ','রামগতি','রায়পুর'],
+  'রাঙ্গামাটি':['বাঘাইছড়ি','বরকল','বেলাইছড়ি','কাউখালী','কাপ্তাই','জুরাছড়ি','লংগদু','নানিয়ারচর','রাজস্থলী','রাঙ্গামাটি সদর'],
+  'বান্দরবান':['আলীকদম','বান্দরবান সদর','লামা','নাইক্ষ্যংছড়ি','রোয়াংছড়ি','রুমা','থানচি'],
+  'হাটহাজারী':['হাটহাজারী','ফটিকছড়ি'],
+  'গোপালগঞ্জ':['কাশিয়ানী','কোটালীপাড়া','মুকসুদপুর','রাজৈর','টুঙ্গিপাড়া'],
+};
+
+function onDistrictChange(){
+  var dist = document.getElementById('oDistrict').value;
+  var sel = document.getElementById('oUpazila');
+  sel.innerHTML = '<option value="">— উপজেলা বেছে নিন —</option>';
+  var list = UPAZILAS[dist] || [];
+  list.forEach(function(u){
+    var opt = document.createElement('option');
+    opt.value = u; opt.textContent = u;
+    sel.appendChild(opt);
+  });
+  updDeliveryCharge();
+}
+
+function updDeliveryCharge(){
+  var dist = (document.getElementById('oDistrict')||{value:''}).value;
+  var upa = (document.getElementById('oUpazila')||{value:''}).value;
+  if(!dist) return;
+  var isSatkhiraSadar = (dist === 'সাতক্ষীরা' && upa === 'সাতক্ষীরা সদর');
+  var charge = isSatkhiraSadar ? 60 : 120;
+  var loc = isSatkhiraSadar ? 'সাতক্ষীরা সদর' : 'সাতক্ষীরার বাইরে';
+  var base = 0;
+  if(currentOrder && currentOrder.isCart && currentOrder.cartItems){
+    currentOrder.cartItems.forEach(function(i){ base += i.price * i.qty; });
+  } else if(currentOrder){
+    base = Number(currentOrder.price) || 0;
+  }
+  var total = base + charge;
+
+  // COD box — show only delivery charge
+  var ci = document.getElementById('codChargeInfo');
+  if(ci){ ci.textContent = '🚚 ' + loc + ' — ডেলিভারি চার্জ: ৳' + charge; ci.style.display = 'block'; }
+  // Full pay box — show total
+  var fi = document.getElementById('fullTotalInfo');
+  if(fi){
+    fi.innerHTML = 'পণ্য <b>৳'+base.toLocaleString()+'</b> + ডেলিভারি <b>৳'+charge+'</b> = <span style="color:#2D5A27;font-size:.9rem">মোট <b>৳'+total.toLocaleString()+'</b></span>';
+    fi.style.display = 'block';
+  }
+}
+
+
+
+function selMainPay(mode, btn){
+  document.getElementById('oPayMode').value = mode;
+  document.querySelectorAll('.pay-tog-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var codBox = document.getElementById('codBox');
+  var fullBox = document.getElementById('fullPayBox');
+  if(mode === 'cod'){
+    codBox.style.display = 'block';
+    fullBox.style.display = 'none';
+    // default payment = বিকাশ (ডেলিভারি)
+    document.getElementById('oPayment').value = 'বিকাশ (ডেলিভারি)';
+  } else {
+    codBox.style.display = 'none';
+    fullBox.style.display = 'block';
+    document.getElementById('oPayment').value = 'বিকাশ (ফুল)';
+  }
+  updDeliveryCharge();
+}
+
+function selSubPay(method, btn, boxType){
+  document.getElementById('oPayment').value = method;
+  var parent = btn.closest('.pay-toggle-row') || btn.parentElement;
+  parent.querySelectorAll('.pay-sub-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function copyNum(btnId){
+  var num = '01747401484';
+  try{
+    if(navigator.clipboard){ navigator.clipboard.writeText(num); }
+    else{ var t=document.createElement('textarea'); t.value=num; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); }
+  }catch(e){}
+  // Button flash
+  var btn = document.getElementById(btnId);
+  if(btn){
+    btn.textContent = '✓ Copied!';
+    btn.style.background = '#2D5A27';
+    btn.style.transform = 'scale(1.15)';
+    setTimeout(function(){
+      btn.textContent = 'Copy';
+      btn.style.background = btn.id==='copyBtnCOD' ? 'var(--amber)' : '#2D5A27';
+      btn.style.transform = '';
+    }, 1600);
+  }
+  // Floating toast
+  var toast = document.getElementById('copyToast');
+  if(toast){
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+  }
+}
+
+function showOrdSuccess(){
+  var ov=document.getElementById('ordSuccessOv');
+  if(!ov) return;
+  ov.classList.add('show');
+  setTimeout(function(){ ov.classList.remove('show'); }, 3000);
+}
+
 function submitOrder(){
   var name=document.getElementById('oName').value.trim();
-  var phone=document.getElementById('oPhone').value.trim();
-  var address=document.getElementById('oAddress').value.trim();
-  if(!name||!phone||!address){showToast('⚠️ নাম, ফোন ও ঠিকানা আবশ্যক!','#C0392B');return;}
+  var phone=document.getElementById('oPhone').value.trim().replace(/\s/g,'');
+  var district=document.getElementById('oDistrict')?document.getElementById('oDistrict').value:'';
+  var upazila=document.getElementById('oUpazila')?document.getElementById('oUpazila').value:'';
+  var addrBase=document.getElementById('oAddress').value.trim();
+  var address=[addrBase,upazila,district,'বাংলাদেশ'].filter(Boolean).join(', ');
   var payment=document.getElementById('oPayment').value;
+  var payMode=(document.getElementById('oPayMode')||{value:'cod'}).value;
+  var trxId='';
+  var trxField = payMode==='full' ? 'oTrxIdFull' : 'oTrxId';
+  trxId=(document.getElementById(trxField)||{value:''}).value.trim();
+  if(!trxId){showToast('⚠️ TrxID / ট্রানজেকশন নম্বর দিন!','#C0392B');return;}
+  if(!name||!phone){showToast('⚠️ নাম ও মোবাইল নম্বর আবশ্যক!','#C0392B');return;}
+  if(!/^01[3-9]\d{8}$/.test(phone)){showToast('⚠️ সঠিক মোবাইল নম্বর দিন!','#C0392B');return;}
+  if(!district&&!addrBase){showToast('⚠️ ডেলিভারি ঠিকানা দিন!','#C0392B');return;}
+  var isSatkhiraSadar2=(district==='সাতক্ষীরা'&&upazila==='সাতক্ষীরা সদর');
+  var deliveryCharge=isSatkhiraSadar2?60:120;
   var note=document.getElementById('oNote').value.trim();
-  var ts=new Date().toLocaleString('bn-BD');
+  var ts=new Date().toISOString();
   var newOrders=[];
   if(currentOrder&&currentOrder.isCart&&currentOrder.cartItems){
     for(var i=0;i<currentOrder.cartItems.length;i++){
       var item=currentOrder.cartItems[i];
-      newOrders.push({product:item.name,icon:item.icon,price:item.price*item.qty,unitPrice:item.price,qty:item.qty+'কেজি',name:name,phone:phone,address:address,payment:payment,note:note,time:ts,status:'নতুন অর্ডার'});
+      var tot=(item.price*item.qty)+deliveryCharge;
+      newOrders.push({product:item.name,icon:item.icon,price:tot,unitPrice:item.price,qty:item.qty+'কেজি',deliveryCharge:deliveryCharge,trxId:trxId,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
     }
     cart=[];updateBadge();
-  }else if(currentOrder){
+  } else if(currentOrder){
     var qty=document.getElementById('oQty').value;
-    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:currentOrder.price,qty:qty,name:name,phone:phone,address:address,payment:payment,note:note,time:ts,status:'নতুন অর্ডার'});
+    var base=Number(currentOrder.price)||0;
+    var tot=base+deliveryCharge;
+    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:tot,unitPrice:base,qty:qty,deliveryCharge:deliveryCharge,trxId:trxId,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
   }
-  // Save to Firebase
   if(window._firebaseReady && window._fbDB){
-    newOrders.forEach(function(ord){
-      window._fbPush(window._fbRef(window._fbDB,'orders'), ord);
-    });
+    var ordersRef=window._fbRef(window._fbDB,'orders');
+    newOrders.forEach(function(ord){ window._fbPush(ordersRef,ord); });
   } else {
     var ords=[];try{ords=JSON.parse(localStorage.getItem('modhu_orders')||'[]');}catch(e){}
-    newOrders.forEach(function(o){ o.id='ORD-'+Date.now(); ords.unshift(o); });
-    localStorage.setItem('modhu_orders', JSON.stringify(ords));
+    newOrders.forEach(function(ord){ ord.id='ORD-'+Date.now(); ords.unshift(ord); });
+    localStorage.setItem('modhu_orders',JSON.stringify(ords));
   }
   closeOrder();
-  showToast('🎉 অর্ডার সফলভাবে গ্রহণ হয়েছে!','#2D5A27');
-  ['oName','oPhone','oAddress','oNote'].forEach(function(id){document.getElementById(id).value='';});
+  showOrdSuccess();
+  // Reset form
+  ['oName','oPhone','oAddress','oNote','oTrxId','oTrxIdFull'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var od=document.getElementById('oDistrict'); if(od) od.value='';
+  var ou=document.getElementById('oUpazila'); if(ou){ou.innerHTML='<option value="">— আগে জেলা বেছে নিন —</option>';}
+  var pe=document.getElementById('phoneErr'); if(pe) pe.style.display='none';
+  var ci=document.getElementById('codChargeInfo'); if(ci) ci.style.display='none';
+  var fi=document.getElementById('fullTotalInfo'); if(fi) fi.style.display='none';
+  // Reset to COD
+  document.getElementById('oPayment').value='বিকাশ (ডেলিভারি)';
+  document.getElementById('oPayMode').value='cod';
+  document.getElementById('codBox').style.display='block';
+  document.getElementById('fullPayBox').style.display='none';
+  document.querySelectorAll('.pay-tog-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});
+  document.querySelectorAll('#codBox .pay-sub-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});
+  document.querySelectorAll('#fullPayBox .pay-sub-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});
 }
 
 
@@ -792,21 +1147,26 @@ function openMyOrders(){
 }
 function closeMyOrders(){document.getElementById('myOrdersModal').classList.remove('open');}
 function searchMyOrders(){
-  var phone=document.getElementById('myPhone').value.trim();
-  if(!phone){showToast('⚠️ ফোন নম্বর দিন!','#C0392B');return;}
+  var q=document.getElementById('moSearch').value.trim();
+  var listEl=document.getElementById('myOrdersList');
+  if(q.length<5){listEl.innerHTML='<div class="mo-empty"><span>🔍</span>কমপক্ষে ৫ সংখ্যা দিন</div>';return;}
+  listEl.innerHTML='<div class="mo-empty"><span>⏳</span>খুঁজছি...</div>';
   if(window._firebaseReady && window._fbDB){
-    window._fbGet(window._fbRef(window._fbDB,'orders')).then(function(snap){
-      var found=[];
+    var ordersRef = window._fbRef(window._fbDB, 'orders');
+    window._fbGet(ordersRef).then(function(snap){
+      var orders=[];
       if(snap.exists()){
         var data=snap.val();
-        Object.keys(data).forEach(function(k){
-          var o=data[k]; o.id=k;
-          if(o.phone===phone) found.push(o);
-        });
+        Object.keys(data).forEach(function(k){ var o=data[k]; o.id=k; orders.unshift(o); });
       }
+      var found=orders.filter(function(o){return (o.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));});
       renderMyOrders(found);
     });
+    return;
   }
+  var orders=[];try{orders=JSON.parse(localStorage.getItem('modhu_orders')||'[]');}catch(e){}
+  var found=orders.filter(function(o){return (o.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));});
+  renderMyOrders(found);
 }
 function renderMyOrders(found){
   var listEl=document.getElementById('myOrdersList');
@@ -877,11 +1237,13 @@ function applyWebSettings(){
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
+applyWebSettings();
+window._pageReady = true;
+// Firebase onValue will fire and re-render automatically
 renderProducts('all');
 renderSB();
 renderReviews(false);
-applyWebSettings();
-window._pageReady = true;
 </script>
+<div class="copy-toast" id="copyToast">✅ নম্বর কপি হয়েছে</div>
 </body>
 </html>
