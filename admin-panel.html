@@ -190,14 +190,23 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--bro
 .clock-sep{animation:clockPulse 1s infinite}
 
 /* Date Filter */
-.date-filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
-.df-btn{background:var(--white);border:2px solid #E8D5B0;color:var(--brown-l);padding:.35rem .8rem;border-radius:20px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .25s}
-.df-btn:hover{border-color:var(--amber);color:var(--amber-d)}
-.df-btn.active{background:var(--amber);border-color:var(--amber-d);color:white}
-.df-custom{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
-.df-date-input{border:2px solid #E8D5B0;border-radius:8px;padding:.3rem .6rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--brown);outline:none;transition:border .25s}
+.df-wrap{position:relative;display:inline-block;margin-bottom:1rem}
+.df-trigger{display:flex;align-items:center;gap:.5rem;background:var(--white);border:2px solid #E8D5B0;border-radius:24px;padding:.42rem 1rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--brown);transition:all .25s;user-select:none}
+.df-trigger:hover{border-color:var(--amber);color:var(--amber-d)}
+.df-trigger .df-arrow{font-size:.6rem;transition:transform .3s;margin-left:.2rem}
+.df-wrap.open .df-arrow{transform:rotate(180deg)}
+.df-dropdown{position:absolute;top:calc(100% + 8px);left:0;background:var(--white);border:2px solid #E8D5B0;border-radius:16px;box-shadow:0 8px 32px rgba(59,31,10,.15);min-width:200px;z-index:500;overflow:hidden;opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+.df-wrap.open .df-dropdown{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.df-opt{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.1rem;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;color:var(--brown-l);cursor:pointer;transition:background .2s;border-bottom:1px solid #F0EBE0}
+.df-opt:last-child{border-bottom:none}
+.df-opt:hover{background:var(--cream);color:var(--amber-d)}
+.df-opt.selected{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;font-weight:700}
+.df-opt.selected:hover{filter:brightness(1.05)}
+.df-sep{height:1px;background:#E8D5B0;margin:.2rem 0}
+.df-custom-row{padding:.6rem 1rem;display:flex;flex-direction:column;gap:.4rem}
+.df-date-input{border:2px solid #E8D5B0;border-radius:8px;padding:.3rem .6rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--brown);outline:none;width:100%}
 .df-date-input:focus{border-color:var(--amber)}
-.df-apply{background:var(--green);color:white;border:none;border-radius:8px;padding:.35rem .8rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer}
+.df-apply{background:var(--amber);color:white;border:none;border-radius:8px;padding:.38rem;width:100%;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;margin-top:.2rem}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -319,17 +328,24 @@ setTimeout(function(){
           <button class="amber-btn" onclick="loadOrders()">🔄 রিফ্রেশ</button>
         </div>
       </div>
-      <div class="date-filter-bar">
-  <button class="df-btn active" onclick="setDateFilter('today',this)">আজ</button>
-  <button class="df-btn" onclick="setDateFilter('7',this)">৭ দিন</button>
-  <button class="df-btn" onclick="setDateFilter('30',this)">৩০ দিন</button>
-  <button class="df-btn" onclick="setDateFilter('90',this)">৯০ দিন</button>
-  <button class="df-btn" onclick="setDateFilter('all',this)">সব</button>
-  <div class="df-custom">
-    <input type="date" class="df-date-input" id="dfFrom" placeholder="শুরু"/>
-    <span style="font-size:.75rem;color:var(--brown-l)">—</span>
-    <input type="date" class="df-date-input" id="dfTo" placeholder="শেষ"/>
-    <button class="df-apply" onclick="applyCustomDate()">✓</button>
+      <div class="df-wrap" id="dfWrap">
+  <div class="df-trigger" onclick="toggleDFDropdown()">
+    📅 <span id="dfLabel">আজ</span>
+    <span class="df-arrow">▼</span>
+  </div>
+  <div class="df-dropdown" id="dfDropdown">
+    <div class="df-opt selected" onclick="selectDF('today','আজ',this)">🌅 আজকের অর্ডার</div>
+    <div class="df-opt" onclick="selectDF('7','শেষ ৭ দিন',this)">📆 শেষ ৭ দিন</div>
+    <div class="df-opt" onclick="selectDF('30','শেষ ৩০ দিন',this)">📅 শেষ ৩০ দিন</div>
+    <div class="df-opt" onclick="selectDF('90','শেষ ৯০ দিন',this)">🗓️ শেষ ৯০ দিন</div>
+    <div class="df-opt" onclick="selectDF('all','সব অর্ডার',this)">📋 সব অর্ডার</div>
+    <div class="df-sep"></div>
+    <div class="df-custom-row">
+      <div style="font-size:.75rem;color:var(--brown-l);font-weight:600;margin-bottom:.2rem">📌 নির্দিষ্ট তারিখ</div>
+      <input type="date" class="df-date-input" id="dfFrom"/>
+      <input type="date" class="df-date-input" id="dfTo"/>
+      <button class="df-apply" onclick="applyCustomDate()">✓ প্রয়োগ করুন</button>
+    </div>
   </div>
 </div>
 <div class="stats-row" id="srow"></div>
@@ -1136,12 +1152,23 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // ══ DATE FILTER ══
-var _dfMode = 'today', _dfFrom = null, _dfTo = null;
+var _dfMode = 'all', _dfFrom = null, _dfTo = null;
 
-function setDateFilter(mode, btn){
+function toggleDFDropdown(){
+  document.getElementById('dfWrap').classList.toggle('open');
+}
+// Close dropdown on outside click
+document.addEventListener('click', function(e){
+  var w = document.getElementById('dfWrap');
+  if(w && !w.contains(e.target)) w.classList.remove('open');
+});
+
+function selectDF(mode, label, el){
   _dfMode = mode; _dfFrom = null; _dfTo = null;
-  document.querySelectorAll('.df-btn').forEach(function(b){ b.classList.remove('active'); });
-  if(btn) btn.classList.add('active');
+  document.getElementById('dfLabel').textContent = label;
+  document.querySelectorAll('.df-opt').forEach(function(o){ o.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('dfWrap').classList.remove('open');
   doFilter();
 }
 
@@ -1150,17 +1177,19 @@ function applyCustomDate(){
   var t = document.getElementById('dfTo').value;
   if(!f && !t) return;
   _dfMode = 'custom'; _dfFrom = f; _dfTo = t;
-  document.querySelectorAll('.df-btn').forEach(function(b){ b.classList.remove('active'); });
+  var label = (f||'?') + ' — ' + (t||'?');
+  document.getElementById('dfLabel').textContent = label;
+  document.querySelectorAll('.df-opt').forEach(function(o){ o.classList.remove('selected'); });
+  document.getElementById('dfWrap').classList.remove('open');
   doFilter();
 }
 
 function orderMatchesDate(o){
   if(_dfMode === 'all') return true;
-  // Try to parse order time
   var ts = o.created_at || o.time || '';
   var d;
   try{ d = new Date(ts); }catch(e){ return true; }
-  if(isNaN(d)) return true;
+  if(isNaN(d.getTime())) return true;
   var now = new Date();
   var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   if(_dfMode === 'today'){
