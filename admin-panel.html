@@ -182,36 +182,33 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--bro
 @media(max-width:900px){.stats-row{grid-template-columns:1fr 1fr}.sg{grid-template-columns:1fr}}
 @media(max-width:640px){.sidebar{width:200px}.main{margin-left:200px}}
 
-/* Digital Clock */
-.sb-clock{padding:.5rem 1.2rem .8rem;text-align:center;border-top:1px solid rgba(255,255,255,.08)}
-.clock-time{font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;color:var(--amber-l);letter-spacing:2px;text-shadow:0 0 10px rgba(212,130,26,.5)}
-.clock-date{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:.15rem;letter-spacing:.5px}
-@keyframes clockPulse{0%,100%{opacity:1}50%{opacity:.3}}
-.clock-sep{animation:clockPulse 1s infinite}
-
-/* Date Filter */
+.sb-clock{padding:.4rem 1.2rem .7rem;text-align:center;border-top:1px solid rgba(255,255,255,.08)}
+.clk-time{font-family:"Courier New",monospace;font-size:1.05rem;font-weight:700;color:var(--amber-l);letter-spacing:3px;text-shadow:0 0 10px rgba(212,130,26,.4)}
+.clk-sep{animation:sepBlink 1s infinite}
+@keyframes sepBlink{0%,100%{opacity:1}50%{opacity:.1}}
+.clk-date{font-size:.63rem;color:rgba(255,255,255,.38);margin-top:.1rem;letter-spacing:.3px}
+/* Date filter dropdown */
 .df-wrap{position:relative;display:inline-block;margin-bottom:1rem}
-.df-trigger{display:flex;align-items:center;gap:.5rem;background:var(--white);border:2px solid #E8D5B0;border-radius:24px;padding:.42rem 1rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--brown);transition:all .25s;user-select:none}
-.df-trigger:hover{border-color:var(--amber);color:var(--amber-d)}
-.df-trigger .df-arrow{font-size:.6rem;transition:transform .3s;margin-left:.2rem}
+.df-trigger{display:flex;align-items:center;gap:.5rem;background:var(--white);border:2px solid #E8D5B0;border-radius:24px;padding:.42rem 1.1rem;cursor:pointer;font-family:"Hind Siliguri",sans-serif;font-size:.82rem;font-weight:600;color:var(--brown);transition:all .25s;user-select:none;min-width:130px}
+.df-trigger:hover{border-color:var(--amber)}
+.df-arrow{font-size:.55rem;margin-left:auto;transition:transform .3s}
 .df-wrap.open .df-arrow{transform:rotate(180deg)}
-.df-dropdown{position:absolute;top:calc(100% + 8px);left:0;background:var(--white);border:2px solid #E8D5B0;border-radius:16px;box-shadow:0 8px 32px rgba(59,31,10,.15);min-width:200px;z-index:500;overflow:hidden;opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
-.df-wrap.open .df-dropdown{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
-.df-opt{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.1rem;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;color:var(--brown-l);cursor:pointer;transition:background .2s;border-bottom:1px solid #F0EBE0}
-.df-opt:last-child{border-bottom:none}
+.df-dd{position:absolute;top:calc(100% + 8px);left:0;background:var(--white);border:2px solid #E8D5B0;border-radius:16px;box-shadow:0 10px 36px rgba(59,31,10,.18);min-width:210px;z-index:600;overflow:hidden;opacity:0;transform:translateY(-10px) scale(.96);pointer-events:none;transition:all .28s cubic-bezier(.34,1.56,.64,1)}
+.df-wrap.open .df-dd{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.df-opt{display:flex;align-items:center;gap:.6rem;padding:.62rem 1.1rem;font-family:"Hind Siliguri",sans-serif;font-size:.84rem;color:var(--brown-l);cursor:pointer;transition:background .18s;border-bottom:1px solid #F5EFE6}
+.df-opt:last-child{border:none}
 .df-opt:hover{background:var(--cream);color:var(--amber-d)}
-.df-opt.selected{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;font-weight:700}
-.df-opt.selected:hover{filter:brightness(1.05)}
-.df-sep{height:1px;background:#E8D5B0;margin:.2rem 0}
-.df-custom-row{padding:.6rem 1rem;display:flex;flex-direction:column;gap:.4rem}
-.df-date-input{border:2px solid #E8D5B0;border-radius:8px;padding:.3rem .6rem;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--brown);outline:none;width:100%}
-.df-date-input:focus{border-color:var(--amber)}
-.df-apply{background:var(--amber);color:white;border:none;border-radius:8px;padding:.38rem;width:100%;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;margin-top:.2rem}
+.df-opt.sel{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;font-weight:700}
+.df-divider{height:1px;background:#E8D5B0;margin:.3rem 0}
+.df-custom{padding:.6rem 1rem 1rem}
+.df-custom label{font-size:.72rem;color:var(--brown-l);font-weight:600;display:block;margin-bottom:.35rem}
+.df-custom input[type=date]{width:100%;border:2px solid #E8D5B0;border-radius:8px;padding:.32rem .6rem;font-family:"Hind Siliguri",sans-serif;font-size:.78rem;color:var(--brown);outline:none;margin-bottom:.3rem;display:block}
+.df-custom input[type=date]:focus{border-color:var(--amber)}
+.df-apply{background:var(--amber);color:white;border:none;border-radius:8px;padding:.38rem;width:100%;font-family:"Hind Siliguri",sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:.2rem}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyD8ixO1HwtDlAkt-zqx23fIU8kUBpFb28I",
   authDomain: "modhu--bon.firebaseapp.com",
@@ -223,61 +220,45 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-window._fbDB = db;
-window._fbRef = ref;
-window._fbPush = push;
-window._fbOnValue = onValue;
-window._fbUpdate = update;
-window._fbRemove = remove;
-window._fbGet = get;
-window._fbSet = set;
-window._firebaseReady = true;
+window._fbDB=db; window._fbRef=ref; window._fbPush=push;
+window._fbUpdate=update; window._fbRemove=remove; window._fbGet=get; window._fbSet=set;
+window._firebaseReady=true;
 
-var _prevOrderCount = null;
-
-// Orders real-time
 onValue(ref(db,'orders'), function(snap){
-  var orders = [];
+  var orders=[];
   if(snap.exists()){
-    var data = snap.val();
+    var data=snap.val();
     Object.keys(data).forEach(function(k){ var o=data[k]; o.id=k; orders.unshift(o); });
   }
-  window._fbOrders = orders;
-
-  // New order notification
-  if(_prevOrderCount !== null && orders.length > _prevOrderCount){
-    playOrderSound();
-    showOrderNotif(orders[0]);
-  }
-  _prevOrderCount = orders.length;
-
-  if(window._fbOrdersCallback) window._fbOrdersCallback(orders);
-  else {
-    var dash = document.getElementById('dash');
-    if(dash && dash.style.display !== 'none') renderOrders(orders);
-  }
+  window._fbOrders=orders;
+  if(window._fbOrdersReady) window._fbOrdersReady(orders);
+  else { var d=document.getElementById('dash'); if(d&&d.style.display!=='none') loadOrders(); }
 });
-
-// Products / SB / Reviews / Settings real-time
 onValue(ref(db,'products'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbProducts=Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){
+    var d=s.val();
+    var arr=Array.isArray(d)?d:Object.values(d);
+    window._fbProducts=arr.filter(function(x){return x&&x.name;});
+    var cur=document.getElementById('page-products');
+    if(cur&&cur.classList.contains('active')) renderProds('main');
+  }
 });
 onValue(ref(db,'sbproducts'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbSBProducts=Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){
+    var d=s.val();
+    var arr=Array.isArray(d)?d:Object.values(d);
+    window._fbSBProducts=arr.filter(function(x){return x&&x.name;});
+    var cur=document.getElementById('page-sbproducts');
+    if(cur&&cur.classList.contains('active')) renderProds('sb');
+  }
 });
-onValue(ref(db,'reviews'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbReviews=Array.isArray(d)?d:Object.values(d); }
-});
-onValue(ref(db,'settings'), function(s){
-  if(s.exists()) window._fbSettings = s.val();
-});
-
-// Firebase খালি থাকলে default data upload
+onValue(ref(db,'reviews'), function(s){ if(s.exists()){ var d=s.val(); window._fbReviews=Array.isArray(d)?d:Object.values(d); }});
+onValue(ref(db,'settings'), function(s){ if(s.exists()) window._fbSettings=s.val(); });
 setTimeout(function(){
   get(ref(db,'products')).then(function(s){ if(!s.exists()) set(ref(db,'products'), defMain()); });
   get(ref(db,'sbproducts')).then(function(s){ if(!s.exists()) set(ref(db,'sbproducts'), defSB()); });
   get(ref(db,'reviews')).then(function(s){ if(!s.exists()) set(ref(db,'reviews'), defRevs()); });
-}, 3000);
+},3000);
 </script>
 </head>
 <body>
@@ -298,8 +279,8 @@ setTimeout(function(){
   <aside class="sidebar">
     <div class="sb-logo">🍯 মধুবন Admin</div>
 <div class="sb-clock">
-  <div class="clock-time" id="clockTime">০০<span class="clock-sep">:</span>০০<span class="clock-sep">:</span>০০</div>
-  <div class="clock-date" id="clockDate"></div>
+  <div class="clk-time" id="clkT">০০<span class="clk-sep">:</span>০০<span class="clk-sep">:</span>০০</div>
+  <div class="clk-date" id="clkD"></div>
 </div>
     <ul class="sb-menu">
       <li><div class="sb-item active" id="nav-orders" onclick="go('orders','nav-orders')">📦 অর্ডার তালিকা</div></li>
@@ -328,28 +309,25 @@ setTimeout(function(){
           <button class="amber-btn" onclick="loadOrders()">🔄 রিফ্রেশ</button>
         </div>
       </div>
-      <div class="df-wrap" id="dfWrap">
-  <div class="df-trigger" onclick="toggleDFDropdown()">
-    📅 <span id="dfLabel">আজ</span>
-    <span class="df-arrow">▼</span>
-  </div>
-  <div class="df-dropdown" id="dfDropdown">
-    <div class="df-opt selected" onclick="selectDF('today','আজ',this)">🌅 আজকের অর্ডার</div>
-    <div class="df-opt" onclick="selectDF('7','শেষ ৭ দিন',this)">📆 শেষ ৭ দিন</div>
-    <div class="df-opt" onclick="selectDF('30','শেষ ৩০ দিন',this)">📅 শেষ ৩০ দিন</div>
-    <div class="df-opt" onclick="selectDF('90','শেষ ৯০ দিন',this)">🗓️ শেষ ৯০ দিন</div>
-    <div class="df-opt" onclick="selectDF('all','সব অর্ডার',this)">📋 সব অর্ডার</div>
-    <div class="df-sep"></div>
-    <div class="df-custom-row">
-      <div style="font-size:.75rem;color:var(--brown-l);font-weight:600;margin-bottom:.2rem">📌 নির্দিষ্ট তারিখ</div>
-      <input type="date" class="df-date-input" id="dfFrom"/>
-      <input type="date" class="df-date-input" id="dfTo"/>
-      <button class="df-apply" onclick="applyCustomDate()">✓ প্রয়োগ করুন</button>
+      <div class="stats-row" id="srow"></div>
+      <div class="df-wrap" id="dfW">
+  <div class="df-trigger" onclick="dfToggle()">📅 <span id="dfLbl">সব অর্ডার</span><span class="df-arrow">▼</span></div>
+  <div class="df-dd" id="dfDD">
+    <div class="df-opt" onclick="dfSel('today','আজ',this)">🌅 আজকের অর্ডার</div>
+    <div class="df-opt" onclick="dfSel('7','শেষ ৭ দিন',this)">📆 শেষ ৭ দিন</div>
+    <div class="df-opt" onclick="dfSel('30','শেষ ৩০ দিন',this)">📅 শেষ ৩০ দিন</div>
+    <div class="df-opt" onclick="dfSel('90','শেষ ৯০ দিন',this)">🗓️ শেষ ৯০ দিন</div>
+    <div class="df-opt sel" onclick="dfSel('all','সব অর্ডার',this)">📋 সব অর্ডার</div>
+    <div class="df-divider"></div>
+    <div class="df-custom">
+      <label>নির্দিষ্ট তারিখ বেছে নিন</label>
+      <input type="date" id="dfFrom" placeholder="শুরু"/>
+      <input type="date" id="dfTo" placeholder="শেষ"/>
+      <button class="df-apply" onclick="dfCustom()">✓ প্রয়োগ করুন</button>
     </div>
   </div>
 </div>
-<div class="stats-row" id="srow"></div>
-      <div class="fbar">
+<div class="fbar">
         <input type="text" id="srch" placeholder="🔍 নাম, ফোন, পণ্য..." oninput="doFilter()"/>
         <select id="sflt" onchange="doFilter()">
           <option value="">সব স্ট্যাটাস</option>
@@ -495,14 +473,9 @@ if(_ver !== '4.0'){
 
 // ---- AUTH ----
 function login(){
-  var u=document.getElementById('lu').value;
-  var p=document.getElementById('lp').value;
-  if(u==='admin' && p==='S75'){
-    localStorage.setItem('modhu_admin_session', Date.now()+(2*60*60*1000));
-    showDash();
-  } else {
-    document.getElementById('lerr').style.display='block';
-  }
+  var u=document.getElementById('lu').value; var p=document.getElementById('lp').value;
+  if(u==='admin'&&p==='S75'){ localStorage.setItem('modhu_admin_session',Date.now()+(2*60*60*1000)); showDash(); }
+  else { document.getElementById('lerr').style.display='block'; }
 }
 function showDash(){
   document.getElementById('loginWrap').style.display = 'none';
@@ -510,17 +483,14 @@ function showDash(){
   loadOrders();
 }
 function checkSession(){
-  var exp = localStorage.getItem('modhu_admin_session');
-  if(exp && Date.now()<parseInt(exp)){ showDash(); return true; }
-  localStorage.removeItem('modhu_admin_session');
-  return false;
+  var exp=localStorage.getItem('modhu_admin_session');
+  if(exp&&Date.now()<parseInt(exp)){ showDash(); return true; }
+  localStorage.removeItem('modhu_admin_session'); return false;
 }
 function logout(){
   localStorage.removeItem('modhu_admin_session');
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('dash').style.display='none';
-  document.getElementById('lu').value='';
-  document.getElementById('lp').value='';
 }
 
 // ---- NAVIGATION ----
@@ -542,37 +512,32 @@ function go(pageName, navId){
 
 // ---- STORAGE ----
 function getOrders(){ return window._fbOrders||[]; }
+function setOrders(a){ window._fbOrders=a; }
 function getProds(t){
-  if(t==='sb') return window._fbSBProducts||defSB();
-  return window._fbProducts||defMain();
+  var raw = (t==='sb') ? window._fbSBProducts : window._fbProducts;
+  if(raw){
+    // Firebase can return object — convert to array
+    if(!Array.isArray(raw)) raw = Object.values(raw);
+    if(raw.length) return raw;
+  }
+  return (t==='sb') ? defSB() : defMain();
 }
 function setProds(t, a){
-  var fbKey = (t==='sb') ? 'sbproducts' : 'products';
+  var k=(t==='sb')?'sbproducts':'products';
   if(t==='sb') window._fbSBProducts=a; else window._fbProducts=a;
-  if(window._firebaseReady && window._fbDB)
-    window._fbSet(window._fbRef(window._fbDB, fbKey), a);
-}
-function getRevs(){
-  if(window._fbReviews && window._fbReviews.length) return window._fbReviews;
-  return defRevs();
-}
-function setRevs(a){
-  window._fbReviews = a;
-  if(window._firebaseReady && window._fbDB)
-    window._fbSet(window._fbRef(window._fbDB,'reviews'), a);
-}
-function getWS(){
-  if(window._fbSettings) return window._fbSettings;
-  try{return JSON.parse(localStorage.getItem('modhu_websettings')||'{}');}catch(e){return {};}
-}
-function setWS(o){
-  window._fbSettings = o;
-  if(window._firebaseReady && window._fbDB)
-    window._fbSet(window._fbRef(window._fbDB,'settings'), o);
-  localStorage.setItem('modhu_websettings', JSON.stringify(o));
+  if(window._firebaseReady&&window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB,k), a);
+  }
 }
 
-// ---- DEFAULT DATA ----
+function getRevs(){ if(window._fbReviews&&window._fbReviews.length) return window._fbReviews; return defRevs(); }
+
+function setRevs(a){ window._fbReviews=a; if(window._firebaseReady&&window._fbDB) window._fbSet(window._fbRef(window._fbDB,"reviews"),a); }
+
+function getWS(){ if(window._fbSettings) return window._fbSettings; try{return JSON.parse(localStorage.getItem("modhu_websettings")||"{}");}catch(e){return {};} }
+
+function setWS(o){ window._fbSettings=o; if(window._firebaseReady&&window._fbDB) window._fbSet(window._fbRef(window._fbDB,"settings"),o); localStorage.setItem("modhu_websettings",JSON.stringify(o)); }
+
 function defMain(){
   return [
     {id:1, name:'সরিষা ফুলের মধু', desc:'হলদে, সুগন্ধি। ঠান্ডায় জমে।', price:550, icon:'🌼', badge:'জনপ্রিয়', btype:'', cat:'ful', bg:'#FFF8E1,#FFF3CD'},
@@ -604,16 +569,26 @@ var allOrd = [], lastNew = 0, notifCnt = 0, polling = false;
 var STATS = ['নতুন অর্ডার','নিশ্চিত','প্রক্রিয়াধীন','ডেলিভারি দেওয়া হয়েছে','বাতিল'];
 
 function loadOrders(){
-  window._fbOrdersCallback = function(orders){
-    renderOrders(orders);
+  window._fbOrdersReady = function(orders){
+    var prevNew = lastNew;
+    var newCnt = orders.filter(function(o){ return o.status==='নতুন অর্ডার'; }).length;
+    allOrd = orders;
+    if(!polling){ lastNew=newCnt; polling=true; }
+    else if(newCnt>prevNew){
+      var diff=newCnt-prevNew; notifCnt+=diff;
+      var badge=document.getElementById('nbadge');
+      var bell=document.getElementById('nbell');
+      if(badge){badge.textContent=notifCnt;badge.style.display='flex';}
+      if(bell){bell.classList.remove('ring');void bell.offsetWidth;bell.classList.add('ring');}
+      playSound();
+      toast('🔔 '+diff+'টি নতুন অর্ডার!','#D4821A');
+      lastNew=newCnt;
+    }
+    doFilter();
   };
-  // Render immediately if data already loaded
-  if(window._fbOrders && window._fbOrders.length){
-    renderOrders(window._fbOrders);
-  }
+  allOrd = window._fbOrders||[];
+  doFilter();
 }
-
-function renderOrders(orders){ allOrd=orders; renderStats(orders); renderGroups(orders); }
 
 function renderStats(orders){
   var tot = orders.length;
@@ -696,16 +671,16 @@ function renderGroups(orders){
 function togGrp(gi){ document.getElementById('cg' + gi).classList.toggle('open'); }
 
 function doFilter(){
-  var q = document.getElementById('srch').value.toLowerCase();
-  var s = document.getElementById('sflt').value;
-  var f = allOrd.filter(function(o){
-    var nameOk = (o.name||'').toLowerCase().indexOf(q) > -1;
-    var phoneOk = (o.phone||'').indexOf(q) > -1;
-    var prodOk = (o.product||'').toLowerCase().indexOf(q) > -1;
-    var textMatch = !q || nameOk || phoneOk || prodOk;
-    var statusMatch = !s || o.status === s;
-    var dateMatch = orderMatchesDate(o);
-    return textMatch && statusMatch && dateMatch;
+  var q=(document.getElementById('srch')||{value:''}).value.toLowerCase();
+  var s=(document.getElementById('sflt')||{value:''}).value;
+  var f=allOrd.filter(function(o){
+    var nameOk=(o.name||'').toLowerCase().indexOf(q)>-1;
+    var phoneOk=(o.phone||'').indexOf(q)>-1;
+    var prodOk=(o.product||'').toLowerCase().indexOf(q)>-1;
+    var textMatch=!q||nameOk||phoneOk||prodOk;
+    var statMatch=!s||o.status===s;
+    var dateMatch=dfMatch(o);
+    return textMatch&&statMatch&&dateMatch;
   });
   renderStats(f);
   renderGroups(f);
@@ -718,17 +693,13 @@ function clearF(){
 }
 
 function cycStat(btn){
-  var sid = btn.getAttribute('data-oid');
-  var orders = getOrders();
-  var o = orders.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===sid; });
+  var sid=btn.getAttribute('data-oid');
+  var o=allOrd.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===sid; });
   if(!o) return;
-  var idx = STATS.indexOf(o.status);
-  var next = STATS[(idx+1)%STATS.length];
-  if(window._firebaseReady && window._fbDB)
-    window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id), {status:next});
-  btn.textContent = next;
-  btn.className = 'sbadge ' + sCls(next);
-  toast('✅ স্ট্যাটাস: '+next, '#2D5A27');
+  var idx=STATS.indexOf(o.status); var next=STATS[(idx+1)%STATS.length];
+  if(window._firebaseReady&&window._fbDB) window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id),{status:next});
+  btn.textContent=next; btn.className='sbadge '+sCls(next);
+  toast('✅ স্ট্যাটাস: '+next,'#2D5A27');
 }
 
 var curSid = null;
@@ -759,34 +730,25 @@ function openDet(btn){
 }
 function odRow(l, v){ return '<div class="od-r"><span class="od-l">' + l + '</span><span class="od-v">' + v + '</span></div>'; }
 function updDet(){
-  var s = document.getElementById('dSel').value;
-  var o = allOrd.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===curSid; });
-  if(o && window._firebaseReady && window._fbDB)
-    window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id), {status:s});
-  closeM('detModal');
-  toast('✅ আপডেট হয়েছে!','#2D5A27');
+  var s=document.getElementById('dSel').value;
+  var o=allOrd.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===curSid; });
+  if(o&&window._firebaseReady&&window._fbDB) window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id),{status:s});
+  closeM('detModal'); toast('✅ আপডেট হয়েছে!','#2D5A27');
 }
 
 function askDelOrd(btn){
-  var sid = btn.getAttribute('data-oid');
-  var orders = getOrders();
-  var o = orders.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===sid; });
-  confirm2('এই অর্ডারটি মুছে দেবেন?', function(){
-    if(o && window._firebaseReady && window._fbDB)
-      window._fbRemove(window._fbRef(window._fbDB,'orders/'+o.id));
+  var sid=btn.getAttribute('data-oid');
+  var o=allOrd.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===sid; });
+  confirm2('এই অর্ডারটি মুছে দেবেন?',function(){
+    if(o&&window._firebaseReady&&window._fbDB) window._fbRemove(window._fbRef(window._fbDB,'orders/'+o.id));
     toast('🗑️ মুছে গেছে','#C0392B');
   });
 }
 function askDelGrp(btn){
-  var pk = decodeURIComponent(btn.getAttribute('data-pk')).split('__');
-  confirm2(pk[1]+' এর সব অর্ডার মুছবেন?', function(){
-    var orders = getOrders().filter(function(o){ return !((o.phone||'')===pk[0] && (o.name||'')===pk[1]); });
-    orders.forEach(function(o){});
-    // Delete each from Firebase
-    if(window._firebaseReady && window._fbDB){
-      getOrders().filter(function(o){ return (o.phone||'')===pk[0] && (o.name||'')===pk[1]; })
-        .forEach(function(o){ window._fbRemove(window._fbRef(window._fbDB,'orders/'+o.id)); });
-    }
+  var pk=decodeURIComponent(btn.getAttribute('data-pk')).split('__');
+  confirm2(pk[1]+' এর সব অর্ডার মুছবেন?',function(){
+    allOrd.filter(function(o){ return (o.phone||'')===pk[0]&&(o.name||'')===pk[1]; })
+      .forEach(function(o){ if(window._firebaseReady&&window._fbDB) window._fbRemove(window._fbRef(window._fbDB,'orders/'+o.id)); });
     toast('🗑️ সব অর্ডার মুছে গেছে','#C0392B');
   });
 }
@@ -808,7 +770,7 @@ function renderProds(type){
     html += '<div class="pc-body">';
     if(p.badge) html += '<span class="pc-badge ' + (p.btype||'') + '">' + p.badge + '</span>';
     html += '<div class="pc-name">' + p.name + '</div>';
-    html += '<div class="pc-desc">' + p.desc + '</div>';
+    html += '<div class="pc-desc">' + (p.description||p.desc||'') + '</div>';
     html += '<div class="pc-price">৳' + Number(p.price).toLocaleString() + '/কেজি</div>';
     html += '<div class="qp-box">';
     html += '<input type="number" class="qp-input" id="qp_' + safePid + '" placeholder="নতুন মূল্য"/>';
@@ -861,7 +823,7 @@ function openEditProd(btn){
   document.getElementById('pm-title').textContent = '✏️ পণ্য সম্পাদনা';
   document.getElementById('pm-name').value = p.name || '';
   document.getElementById('pm-icon').value = p.icon || '';
-  document.getElementById('pm-desc').value = p.desc || '';
+  document.getElementById('pm-desc').value = p.description || p.desc || '';
   document.getElementById('pm-price').value = p.price || '';
   document.getElementById('pm-cat').value = p.cat || 'ful';
   document.getElementById('pm-badge').value = p.badge || '';
@@ -877,7 +839,7 @@ function saveProd(){
   var price = parseFloat(document.getElementById('pm-price').value);
   if(!name || !icon || !desc || !price){ toast('⚠️ নাম, আইকন, বিবরণ ও মূল্য দিন!', '#C0392B'); return; }
   var obj = {
-    name: name, icon: icon, desc: desc, price: price,
+    name: name, icon: icon, description: desc, desc: desc, price: price,
     cat: document.getElementById('pm-cat').value,
     badge: document.getElementById('pm-badge').value.trim(),
     btype: document.getElementById('pm-btype').value,
@@ -1099,113 +1061,76 @@ if(!localStorage.getItem('modhu_orders')){
       {id:'ORD-1004', product:'বাইন ফুলের মধু', icon:'🌸', price:900, name:'সুমাইয়া আক্তার', phone:'01956781234', address:'সিলেট', qty:'১ কেজি', payment:'নগদ', note:'', time:'০৯/০৩/২০২৫', status:'ডেলিভারি দেওয়া হয়েছে'}
     ]));
 }
-// ══ NOTIFICATION + SOUND ══
-function playOrderSound(){
-  try{
-    var ctx = new (window.AudioContext||window.webkitAudioContext)();
-    var notes = [523,659,784,1047];
-    notes.forEach(function(freq, i){
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = freq;
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.3);
-      osc.start(ctx.currentTime + i*0.15);
-      osc.stop(ctx.currentTime + i*0.15 + 0.3);
-    });
-  }catch(e){}
-}
-
-function showOrderNotif(order){
-  var el = document.getElementById('orderNotif');
-  if(!el){
-    el = document.createElement('div');
-    el.id = 'orderNotif';
-    el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:linear-gradient(135deg,#2D5A27,#3A7A30);color:white;padding:1rem 1.4rem;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.35);min-width:260px;font-family:Hind Siliguri,sans-serif;transform:translateX(120%);transition:transform .4s cubic-bezier(.34,1.56,.64,1)';
-    document.body.appendChild(el);
-  }
-  if(order){
-    el.innerHTML = '<div style="font-size:.8rem;opacity:.8;margin-bottom:.3rem">🔔 নতুন অর্ডার!</div>'
-      +'<div style="font-weight:700;font-size:1rem">'+order.product+'</div>'
-      +'<div style="font-size:.85rem;opacity:.9;margin-top:.2rem">👤 '+order.name+' | ৳'+Number(order.price||0).toLocaleString()+'</div>';
-  }
-  setTimeout(function(){ el.style.transform='translateX(0)'; }, 10);
-  setTimeout(function(){ el.style.transform='translateX(120%)'; }, 5000);
-}
 
 // ══ DIGITAL CLOCK ══
-function updateClock(){
-  var now = new Date();
-  var h = String(now.getHours()).padStart(2,'0');
-  var m = String(now.getMinutes()).padStart(2,'0');
-  var s = String(now.getSeconds()).padStart(2,'0');
-  var ct = document.getElementById('clockTime');
-  if(ct) ct.innerHTML = h+'<span class="clock-sep">:</span>'+m+'<span class="clock-sep">:</span>'+s;
-  var days = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
-  var months = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
-  var cd = document.getElementById('clockDate');
-  if(cd) cd.textContent = days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()];
+function updClk(){
+  var n=new Date();
+  var t=document.getElementById('clkT');
+  var d=document.getElementById('clkD');
+  if(t) t.innerHTML=pad(n.getHours())+'<span class="clk-sep">:</span>'+pad(n.getMinutes())+'<span class="clk-sep">:</span>'+pad(n.getSeconds());
+  var days=['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+  var mths=['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+  if(d) d.textContent=days[n.getDay()]+', '+n.getDate()+' '+mths[n.getMonth()];
 }
-setInterval(updateClock, 1000);
-updateClock();
+function pad(x){ return String(x).padStart(2,'0'); }
+setInterval(updClk,1000); updClk();
 
 // ══ DATE FILTER ══
-var _dfMode = 'all', _dfFrom = null, _dfTo = null;
-
-function toggleDFDropdown(){
-  document.getElementById('dfWrap').classList.toggle('open');
-}
-// Close dropdown on outside click
-document.addEventListener('click', function(e){
-  var w = document.getElementById('dfWrap');
-  if(w && !w.contains(e.target)) w.classList.remove('open');
-});
-
-function selectDF(mode, label, el){
-  _dfMode = mode; _dfFrom = null; _dfTo = null;
-  document.getElementById('dfLabel').textContent = label;
-  document.querySelectorAll('.df-opt').forEach(function(o){ o.classList.remove('selected'); });
-  el.classList.add('selected');
-  document.getElementById('dfWrap').classList.remove('open');
+var _dfMode='all', _dfFrom=null, _dfTo=null;
+function dfToggle(){ document.getElementById('dfW').classList.toggle('open'); }
+document.addEventListener('click',function(e){ var w=document.getElementById('dfW'); if(w&&!w.contains(e.target)) w.classList.remove('open'); });
+function dfSel(mode,label,el){
+  _dfMode=mode; _dfFrom=null; _dfTo=null;
+  document.getElementById('dfLbl').textContent=label;
+  document.querySelectorAll('.df-opt').forEach(function(o){o.classList.remove('sel');});
+  el.classList.add('sel');
+  document.getElementById('dfW').classList.remove('open');
   doFilter();
 }
-
-function applyCustomDate(){
-  var f = document.getElementById('dfFrom').value;
-  var t = document.getElementById('dfTo').value;
-  if(!f && !t) return;
-  _dfMode = 'custom'; _dfFrom = f; _dfTo = t;
-  var label = (f||'?') + ' — ' + (t||'?');
-  document.getElementById('dfLabel').textContent = label;
-  document.querySelectorAll('.df-opt').forEach(function(o){ o.classList.remove('selected'); });
-  document.getElementById('dfWrap').classList.remove('open');
+function dfCustom(){
+  var f=document.getElementById('dfFrom').value;
+  var t=document.getElementById('dfTo').value;
+  if(!f&&!t) return;
+  _dfMode='custom'; _dfFrom=f; _dfTo=t;
+  document.getElementById('dfLbl').textContent=(f||'?')+' — '+(t||'?');
+  document.querySelectorAll('.df-opt').forEach(function(o){o.classList.remove('sel');});
+  document.getElementById('dfW').classList.remove('open');
   doFilter();
 }
-
-function orderMatchesDate(o){
-  if(_dfMode === 'all') return true;
-  var ts = o.created_at || o.time || '';
-  var d;
-  try{ d = new Date(ts); }catch(e){ return true; }
-  if(isNaN(d.getTime())) return true;
-  var now = new Date();
-  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  if(_dfMode === 'today'){
-    var od = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    return od.getTime() === today.getTime();
+function dfMatch(o){
+  if(_dfMode==='all') return true;
+  var ts=o.created_at||'';
+  var d=null;
+  if(ts){ try{ d=new Date(ts); if(isNaN(d.getTime())) d=null; }catch(e){d=null;} }
+  if(!d) return (_dfMode!=='today'&&_dfMode!=='custom');
+  var now=new Date();
+  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  if(_dfMode==='today'){
+    return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()===today.getTime();
   }
-  if(_dfMode === 'custom'){
-    var from = _dfFrom ? new Date(_dfFrom) : null;
-    var to = _dfTo ? new Date(_dfTo+'T23:59:59') : null;
-    if(from && d < from) return false;
-    if(to && d > to) return false;
+  if(_dfMode==='custom'){
+    var from=_dfFrom?new Date(_dfFrom):null;
+    var to=_dfTo?new Date(_dfTo+'T23:59:59'):null;
+    if(from&&d<from) return false;
+    if(to&&d>to) return false;
     return true;
   }
-  var days = parseInt(_dfMode);
-  var cutoff = new Date(today.getTime() - (days-1)*24*60*60*1000);
-  return d >= cutoff;
+  return d>=new Date(today.getTime()-(parseInt(_dfMode)-1)*864e5);
+}
+
+// ══ NOTIFICATION SOUND ══
+function playSound(){
+  try{
+    var c=new(window.AudioContext||window.webkitAudioContext)();
+    [523,659,784,1047].forEach(function(f,i){
+      var o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.frequency.value=f;o.type='sine';
+      g.gain.setValueAtTime(.3,c.currentTime+i*.15);
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.15+.3);
+      o.start(c.currentTime+i*.15);o.stop(c.currentTime+i*.15+.3);
+    });
+  }catch(e){}
 }
 
 </script>
