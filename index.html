@@ -289,6 +289,66 @@ footer{background:var(--brown);color:rgba(255,255,255,.75);padding:2.5rem 4% 1.5
 
 .copy-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A3A15;color:white;padding:.35rem .9rem;border-radius:20px;font-size:.75rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;pointer-events:none;opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:99999;white-space:nowrap}
 .copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══ 3-DOT MENU ═══ */
+.three-dot-wrap{position:relative}
+.three-dot-btn{background:none;border:2px solid var(--amber-l);border-radius:8px;width:38px;height:38px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;transition:all .2s}
+.three-dot-btn:hover{background:var(--amber-l);border-color:var(--amber)}
+.three-dot-btn span{display:block;width:5px;height:5px;border-radius:50%;background:var(--amber-d);transition:all .2s}
+.three-dot-btn.open span{background:var(--amber)}
+.dot-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:white;border-radius:16px;box-shadow:0 12px 40px rgba(59,31,10,.18);min-width:200px;padding:.5rem;z-index:500;opacity:0;transform:translateY(-10px) scale(.95);pointer-events:none;transition:all .25s cubic-bezier(.34,1.56,.64,1);border:1.5px solid var(--amber-l)}
+.dot-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.dot-dropdown a{display:flex;align-items:center;gap:.7rem;padding:.6rem .9rem;border-radius:10px;text-decoration:none;color:var(--brown);font-size:.88rem;font-weight:600;transition:background .18s}
+.dot-dropdown a:hover{background:var(--cream)}
+
+/* ═══ TRACKING MODAL ═══ */
+.track-modal{position:fixed;inset:0;z-index:8000;background:rgba(20,8,2,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.track-modal.open{opacity:1;pointer-events:all}
+.track-box{background:white;border-radius:28px;width:92%;max-width:440px;max-height:85vh;overflow-y:auto;box-shadow:0 28px 80px rgba(59,31,10,.3);transform:translateY(30px);transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.track-modal.open .track-box{transform:translateY(0)}
+.track-head{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;padding:1.3rem 1.5rem;border-radius:28px 28px 0 0;display:flex;align-items:center;justify-content:space-between}
+.track-head h3{font-family:'Playfair Display',serif;font-size:1.2rem}
+.track-body{padding:1.4rem 1.5rem}
+.track-search-row{display:flex;gap:.5rem;margin-bottom:1.2rem}
+.track-input{flex:1;border:2px solid #E8D5B0;border-radius:12px;padding:.65rem 1rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none;transition:border .2s}
+.track-input:focus{border-color:var(--amber)}
+.track-btn{background:var(--amber);color:white;border:none;border-radius:12px;padding:.65rem 1.2rem;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s}
+.track-btn:hover{background:var(--amber-d)}
+.track-result{display:none}
+.track-order-card{border:2px solid var(--amber-l);border-radius:18px;overflow:hidden;margin-bottom:1rem}
+.track-order-head{background:linear-gradient(135deg,#FFF8E1,#FFF3CD);padding:.9rem 1.1rem;display:flex;align-items:center;gap:.8rem}
+.track-order-icon{font-size:1.8rem}
+.track-order-info h4{font-size:.95rem;font-weight:700;color:var(--brown);margin-bottom:.15rem}
+.track-order-info p{font-size:.75rem;color:var(--brown-l)}
+.track-timeline{padding:1rem 1.1rem}
+.tl-step{display:flex;gap:.9rem;align-items:flex-start;margin-bottom:.9rem;position:relative}
+.tl-step:not(:last-child)::before{content:'';position:absolute;left:15px;top:32px;width:2px;height:calc(100% + 2px);background:#E8D5B0}
+.tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;position:relative;z-index:1}
+.tl-dot.done{background:var(--green);color:white;box-shadow:0 3px 12px rgba(45,90,39,.3)}
+.tl-dot.active{background:var(--amber);color:white;box-shadow:0 3px 12px rgba(212,130,26,.4);animation:tlPulse 1.5s infinite}
+.tl-dot.wait{background:#F5F5F5;color:#BBB;border:2px solid #E0E0E0}
+.tl-info h5{font-size:.85rem;font-weight:700;color:var(--brown);margin-bottom:.18rem}
+.tl-info p{font-size:.75rem;color:var(--brown-l);line-height:1.5}
+@keyframes tlPulse{0%,100%{box-shadow:0 3px 12px rgba(212,130,26,.4)}50%{box-shadow:0 3px 20px rgba(212,130,26,.7)}}
+
+/* ═══ PROFESSIONAL UPGRADES ═══ */
+/* Better product cards */
+.prod-card{background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(59,31,10,.08);transition:all .35s;border:1.5px solid transparent;animation:fadeUp .5s ease both}
+.prod-card:hover{transform:translateY(-6px);box-shadow:0 16px 48px rgba(59,31,10,.16);border-color:var(--amber-l)}
+/* Better hero buttons */
+.btn-primary{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border:none;padding:.9rem 2.2rem;border-radius:50px;font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;box-shadow:0 6px 24px rgba(212,130,26,.45);transition:all .3s}
+.btn-primary:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(212,130,26,.55)}
+/* Smooth scroll indicator */
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.3rem;animation:bounce2 2s infinite}
+.scroll-hint span{width:2px;height:28px;background:linear-gradient(to bottom,var(--amber),transparent);border-radius:2px}
+@keyframes bounce2{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+/* Section title upgrade */
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3vw,2.5rem);color:var(--brown);text-align:center;margin-bottom:.5rem}
+.sec-sub{text-align:center;color:var(--brown-l);font-size:.95rem;margin-bottom:2rem}
+/* Order modal upgrade */
+.order-modal .mbox{border-radius:24px;box-shadow:0 24px 80px rgba(59,31,10,.25)}
+.mh{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border-radius:20px 20px 0 0;padding:1.1rem 1.4rem;display:flex;align-items:center;justify-content:space-between}
+.mh h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:white}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -354,6 +414,18 @@ onValue(ref(db,'settings'), function(s){
   <div style="display:flex;gap:.6rem;align-items:center">
     <button class="my-orders-btn" onclick="openMyOrders()">📋 My Orders</button>
     <button class="cart-pill" onclick="openCart()">🛒 কার্ট <span class="cart-badge" id="cartBadge">0</span></button>
+    <!-- 3-dot menu -->
+    <div class="three-dot-wrap">
+      <button class="three-dot-btn" onclick="toggleDotMenu()" id="dotBtn" aria-label="মেনু">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="dot-dropdown" id="dotMenu">
+        <a href="#" onclick="openMyOrders();closeDotMenu()">📋 My Orders</a>
+        <a href="#" onclick="openTracking();closeDotMenu()">🚚 Track My Order</a>
+        <a href="#products" onclick="closeDotMenu()">🍯 পণ্য দেখুন</a>
+        <a href="#contact" onclick="closeDotMenu()">📞 যোগাযোগ</a>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1115,6 +1187,108 @@ function submitOrder(){
 }
 
 
+
+// ══ 3-DOT MENU ══
+function toggleDotMenu(){
+  var m=document.getElementById('dotMenu');
+  var b=document.getElementById('dotBtn');
+  m.classList.toggle('open');
+  b.classList.toggle('open');
+}
+function closeDotMenu(){
+  document.getElementById('dotMenu').classList.remove('open');
+  document.getElementById('dotBtn').classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  var w=document.querySelector('.three-dot-wrap');
+  if(w && !w.contains(e.target)) closeDotMenu();
+});
+
+// ══ TRACKING ══
+function openTracking(){
+  document.getElementById('trackModal').classList.add('open');
+  document.getElementById('trackResult').style.display='none';
+  document.getElementById('trackPhone').value='';
+  setTimeout(function(){document.getElementById('trackPhone').focus();},300);
+}
+function closeTracking(){ document.getElementById('trackModal').classList.remove('open'); }
+
+var STATUS_STEPS = [
+  {key:'নতুন অর্ডার', icon:'📥', label:'অর্ডার গ্রহণ', desc:'আপনার অর্ডার আমরা পেয়েছি'},
+  {key:'প্রক্রিয়াধীন', icon:'📦', label:'প্যাকেজিং', desc:'আপনার মধু প্যাক করা হচ্ছে'},
+  {key:'ডেলিভারিতে আছে', icon:'🚚', label:'ডেলিভারিতে', desc:'কুরিয়ারে পাঠানো হয়েছে'},
+  {key:'ডেলিভারি দেওয়া হয়েছে', icon:'✅', label:'ডেলিভারি সম্পন্ন', desc:'আপনি পণ্য পেয়েছেন'},
+];
+
+function doTrack(){
+  var phone=document.getElementById('trackPhone').value.trim().replace(/\s/g,'');
+  if(!phone || !/^01[3-9]\d{8}$/.test(phone)){
+    showToast('⚠️ সঠিক মোবাইল নম্বর দিন','#C0392B'); return;
+  }
+  var res=document.getElementById('trackResult');
+  res.style.display='block';
+  res.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--brown-l)">⏳ খুঁজছি...</div>';
+
+  if(window._firebaseReady && window._fbDB){
+    window._fbGet(window._fbRef(window._fbDB,'orders')).then(function(snap){
+      var orders=[];
+      if(snap.exists()){
+        var d=snap.val();
+        var arr=Array.isArray(d)?d:Object.values(d);
+        orders=arr.filter(function(o){return o&&o.phone===phone;});
+      }
+      renderTrackResult(orders);
+    }).catch(function(){ renderTrackResult([]); });
+  } else {
+    try{
+      var all=JSON.parse(localStorage.getItem('modhu_orders')||'[]');
+      renderTrackResult(all.filter(function(o){return o.phone===phone;}));
+    }catch(e){ renderTrackResult([]); }
+  }
+}
+
+function renderTrackResult(orders){
+  var res=document.getElementById('trackResult');
+  if(!orders.length){
+    res.innerHTML='<div style="text-align:center;padding:2rem"><div style="font-size:3rem;margin-bottom:.7rem">📭</div><div style="font-weight:700;color:var(--brown);margin-bottom:.3rem">কোনো অর্ডার পাওয়া যায়নি</div><div style="font-size:.82rem;color:var(--brown-l)">এই নম্বরে কোনো অর্ডার নেই</div></div>';
+    return;
+  }
+  var html='';
+  orders.slice().reverse().forEach(function(o){
+    var curIdx=STATUS_STEPS.findIndex(function(s){return s.key===o.status;});
+    if(curIdx<0) curIdx=0;
+    // Estimate delivery
+    var estTxt='';
+    if(o.status==='ডেলিভারি দেওয়া হয়েছে'){
+      estTxt='<div style="background:#E8F5E9;border-radius:10px;padding:.5rem .8rem;margin:.5rem 0;font-size:.78rem;font-weight:700;color:#2D5A27">✅ ডেলিভারি সম্পন্ন হয়েছে</div>';
+    } else if(o.status==='ডেলিভারিতে আছে'){
+      estTxt='<div style="background:#E3F2FD;border-radius:10px;padding:.5rem .8rem;margin:.5rem 0;font-size:.78rem;font-weight:700;color:#1565C0">🚚 আজ বা আগামীকালের মধ্যে পৌঁছাবে</div>';
+    } else if(o.status==='বাতিল'){
+      estTxt='<div style="background:#FFEBEE;border-radius:10px;padding:.5rem .8rem;margin:.5rem 0;font-size:.78rem;font-weight:700;color:#C62828">❌ এই অর্ডারটি বাতিল করা হয়েছে</div>';
+    } else {
+      estTxt='<div style="background:#FFF8E1;border-radius:10px;padding:.5rem .8rem;margin:.5rem 0;font-size:.78rem;font-weight:700;color:#A85C0A">⏳ ১-৩ কার্যদিবসের মধ্যে ডেলিভারি পাবেন</div>';
+    }
+    html+='<div class="track-order-card">';
+    html+='<div class="track-order-head"><span class="track-order-icon">'+(o.icon||'🍯')+'</span><div class="track-order-info"><h4>'+o.product+'</h4><p>'+(o.qty||'')+(o.time?' • '+o.time.substring(0,16):'')+'</p></div></div>';
+    html+='<div class="track-timeline">';
+    html+=estTxt;
+    // Show বাতিল differently
+    if(o.status==='বাতিল'){
+      html+='<div style="text-align:center;padding:1rem;color:#C62828;font-size:.85rem">এই অর্ডারটি বাতিল করা হয়েছে</div>';
+    } else {
+      STATUS_STEPS.forEach(function(step,idx){
+        var isDone=idx<curIdx;
+        var isActive=idx===curIdx;
+        var cls=isDone?'done':(isActive?'active':'wait');
+        var desc=isActive?'<strong>এখন এই ধাপে আছেন</strong>':step.desc;
+        html+='<div class="tl-step"><div class="tl-dot '+cls+'">'+(isDone?'✓':step.icon)+'</div><div class="tl-info"><h5>'+step.label+'</h5><p>'+desc+'</p></div></div>';
+      });
+    }
+    html+='</div></div>';
+  });
+  res.innerHTML=html;
+}
+
 // ══════════════════════════════════════
 // MY ORDERS
 // ══════════════════════════════════════
@@ -1223,5 +1397,23 @@ renderSB();
 renderReviews(false);
 </script>
 <div class="copy-toast" id="copyToast">✅ নম্বর কপি হয়েছে</div>
+
+<!-- TRACKING MODAL -->
+<div class="track-modal" id="trackModal">
+  <div class="track-box">
+    <div class="track-head">
+      <h3>🚚 Track My Order</h3>
+      <button onclick="closeTracking()" style="background:rgba(255,255,255,.2);border:none;color:white;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div class="track-body">
+      <p style="font-size:.85rem;color:var(--brown-l);margin-bottom:1rem">আপনার মোবাইল নম্বর দিয়ে অর্ডারের অবস্থান জানুন</p>
+      <div class="track-search-row">
+        <input class="track-input" id="trackPhone" type="tel" placeholder="01XXXXXXXXX" maxlength="11"/>
+        <button class="track-btn" onclick="doTrack()">খুঁজুন</button>
+      </div>
+      <div class="track-result" id="trackResult"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
