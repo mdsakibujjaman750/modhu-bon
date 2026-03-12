@@ -182,72 +182,68 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--bro
 @media(max-width:900px){.stats-row{grid-template-columns:1fr 1fr}.sg{grid-template-columns:1fr}}
 @media(max-width:640px){.sidebar{width:200px}.main{margin-left:200px}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-// ══ SUPABASE CONFIG ══
-const _sb = supabase.createClient('https://whywhurqqmggpongxphl.supabase.co', 'Sb_publishable_KEs3jkEhE3RZdGXNEvfTVw_FOznDYD7');
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// Orders real-time
-_sb.channel('admin-orders')
-  .on('postgres_changes', {event:'*', schema:'public', table:'orders'}, function(){
-    loadOrders();
-  })
-  .subscribe();
+const firebaseConfig = {
+  apiKey: "AIzaSyD8ixO1HwtDlAkt-zqx23fIU8kUBpFb28I",
+  authDomain: "modhu--bon.firebaseapp.com",
+  databaseURL: "https://modhu--bon-default-rtdb.firebaseio.com",
+  projectId: "modhu--bon",
+  storageBucket: "modhu--bon.firebasestorage.app",
+  messagingSenderId: "942439122447",
+  appId: "1:942439122447:web:677dce98ab39895bf5057a"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._fbDB = db;
+window._fbRef = ref;
+window._fbPush = push;
+window._fbOnValue = onValue;
+window._fbUpdate = update;
+window._fbRemove = remove;
+window._fbGet = get;
+window._fbSet = set;
+window._firebaseReady = true;
 
-async function loadOrders(){
-  window._sbOrdersCallback = function(orders){
-    renderOrders(orders);
-  };
-  _sb.from('orders').select('*').order('id',{ascending:false}).then(function(r){
-    var orders = r.data||[];
-    window._sbOrders = orders;
-    renderOrders(orders);
+// Orders — real-time
+onValue(ref(db,'orders'), function(snap){
+  var orders=[];
+  if(snap.exists()){
+    var data=snap.val();
+    Object.keys(data).forEach(function(k){ var o=data[k]; o.id=k; orders.unshift(o); });
+  }
+  window._fbOrders=orders;
+  if(window._fbOrdersCallback) window._fbOrdersCallback(orders);
+});
+
+// Products / SB / Reviews / Settings — real-time
+onValue(ref(db,'products'), function(s){
+  if(s.exists()){ var d=s.val(); window._fbProducts=Array.isArray(d)?d:Object.values(d); }
+});
+onValue(ref(db,'sbproducts'), function(s){
+  if(s.exists()){ var d=s.val(); window._fbSBProducts=Array.isArray(d)?d:Object.values(d); }
+});
+onValue(ref(db,'reviews'), function(s){
+  if(s.exists()){ var d=s.val(); window._fbReviews=Array.isArray(d)?d:Object.values(d); }
+});
+onValue(ref(db,'settings'), function(s){
+  if(s.exists()) window._fbSettings=s.val();
+});
+
+// Firebase খালি থাকলে default data upload করো
+setTimeout(function(){
+  get(ref(db,'products')).then(function(s){
+    if(!s.exists()){ set(ref(db,'products'), defMain()); }
   });
-}
-
-// Products/reviews/settings real-time
-_sb.channel('admin-data')
-  .on('postgres_changes', {event:'*', schema:'public', table:'products'}, function(){
-    _sb.from('products').select('*').order('id').then(function(r){ window._sbProducts=r.data||[]; });
-  })
-  .on('postgres_changes', {event:'*', schema:'public', table:'sbproducts'}, function(){
-    _sb.from('sbproducts').select('*').order('id').then(function(r){ window._sbSBProducts=r.data||[]; });
-  })
-  .on('postgres_changes', {event:'*', schema:'public', table:'reviews'}, function(){
-    _sb.from('reviews').select('*').order('id').then(function(r){ window._sbReviews=r.data||[]; });
-  })
-  .subscribe();
-
-// Initial load
-async function loadAllAdminData(){
-  var r1 = await _sb.from('products').select('*').order('id');
-  window._sbProducts = r1.data||[];
-  var r2 = await _sb.from('sbproducts').select('*').order('id');
-  window._sbSBProducts = r2.data||[];
-  var r3 = await _sb.from('reviews').select('*').order('id');
-  window._sbReviews = r3.data||[];
-  var r4 = await _sb.from('Modhu-bon').select('*').limit(1).single();
-  window._sbSettings = r4.data||{};
-  if(!window._sbProducts.length) uploadDefaults();
-}
-loadAllAdminData();
-
-
-// Upload default products if Supabase is empty
-function uploadDefaults(){
-  var dp = defMain();
-  dp.forEach(function(p){
-    _sb.from('products').insert([{name:p.name,icon:p.icon,description:p.desc||'',price:p.price,cat:p.cat||'',badge:p.badge||'',btype:p.btype||'',bg:p.bg||''}]);
+  get(ref(db,'sbproducts')).then(function(s){
+    if(!s.exists()){ set(ref(db,'sbproducts'), defSB()); }
   });
-  var ds = defSB();
-  ds.forEach(function(p){
-    _sb.from('sbproducts').insert([{name:p.name,icon:p.icon,description:p.desc||'',price:p.price,cat:p.cat||'',badge:p.badge||'',btype:p.btype||'',bg:p.bg||''}]);
+  get(ref(db,'reviews')).then(function(s){
+    if(!s.exists()){ set(ref(db,'reviews'), defRevs()); }
   });
-  var dr = defRevs();
-  dr.forEach(function(rv){
-    _sb.from('reviews').insert([{name:rv.name,loc:rv.loc,stars:rv.stars,review_text:rv.text||''}]);
-  });
-}
+}, 3000);
 </script>
 </head>
 <body>
@@ -441,14 +437,13 @@ if(_ver !== '4.0'){
 
 // ---- AUTH ----
 function login(){
-  var u = document.getElementById('lu').value;
-  var p = document.getElementById('lp').value;
-  if(u === 'admin' && p === 'S75'){
-    var expiry = Date.now() + (2 * 60 * 60 * 1000);
-    localStorage.setItem('modhu_admin_session', expiry);
+  var u=document.getElementById('lu').value;
+  var p=document.getElementById('lp').value;
+  if(u==='admin' && p==='S75'){
+    localStorage.setItem('modhu_admin_session', Date.now()+(2*60*60*1000));
     showDash();
   } else {
-    document.getElementById('lerr').style.display = 'block';
+    document.getElementById('lerr').style.display='block';
   }
 }
 function showDash(){
@@ -457,20 +452,17 @@ function showDash(){
   loadOrders();
 }
 function checkSession(){
-  var expiry = localStorage.getItem('modhu_admin_session');
-  if(expiry && Date.now() < parseInt(expiry)){
-    showDash();
-    return true;
-  }
+  var exp=localStorage.getItem('modhu_admin_session');
+  if(exp && Date.now()<parseInt(exp)){ showDash(); return true; }
   localStorage.removeItem('modhu_admin_session');
   return false;
 }
 function logout(){
   localStorage.removeItem('modhu_admin_session');
-  document.getElementById('loginWrap').style.display = 'flex';
-  document.getElementById('dash').style.display = 'none';
-  document.getElementById('lu').value = '';
-  document.getElementById('lp').value = '';
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('dash').style.display='none';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
 }
 
 // ---- NAVIGATION ----
@@ -491,27 +483,37 @@ function go(pageName, navId){
 }
 
 // ---- STORAGE ----
-function getOrders(){
-  return window._sbOrders||[];
+function getOrders(){ return window._fbOrders||[]; }
+function getProds(t){
+  if(t==='sb') return window._fbSBProducts||defSB();
+  return window._fbProducts||defMain();
 }
 function setProds(t, a){
-  var tbl = (t==='sb') ? 'sbproducts' : 'products';
-  if(t==='sb') window._sbSBProducts=a; else window._sbProducts=a;
+  var fbKey=(t==='sb')?'sbproducts':'products';
+  if(t==='sb') window._fbSBProducts=a; else window._fbProducts=a;
+  if(window._firebaseReady && window._fbDB)
+    window._fbSet(window._fbRef(window._fbDB, fbKey), a);
+  localStorage.setItem((t==='sb')?'modhu_sb_products':'modhu_products', JSON.stringify(a));
 }
 function getRevs(){
-  return window._sbReviews||defRevs();
+  if(window._fbReviews && window._fbReviews.length) return window._fbReviews;
+  return defRevs();
 }
 function setRevs(a){
-  window._sbReviews=a;
+  window._fbReviews=a;
+  if(window._firebaseReady && window._fbDB)
+    window._fbSet(window._fbRef(window._fbDB,'reviews'), a);
+  localStorage.setItem('modhu_reviews', JSON.stringify(a));
 }
 function getWS(){
-  return window._sbSettings||{};
+  if(window._fbSettings) return window._fbSettings;
+  try{return JSON.parse(localStorage.getItem('modhu_websettings')||'{}');}catch(e){return {};}
 }
 function setWS(o){
-  window._sbSettings=o;
-  _sb.from('Modhu-bon').update(o).eq('id',1).then(function(r){
-    if(r.error) toast('❌ সেটিং save হয়নি','#C0392B');
-  });
+  window._fbSettings=o;
+  if(window._firebaseReady && window._fbDB)
+    window._fbSet(window._fbRef(window._fbDB,'settings'), o);
+  localStorage.setItem('modhu_websettings', JSON.stringify(o));
 }
 
 // ---- DEFAULT DATA ----
@@ -546,26 +548,9 @@ var allOrd = [], lastNew = 0, notifCnt = 0, polling = false;
 var STATS = ['নতুন অর্ডার','নিশ্চিত','প্রক্রিয়াধীন','ডেলিভারি দেওয়া হয়েছে','বাতিল'];
 
 function loadOrders(){
-  window._fbOrdersCallback = function(orders){
-    var prevNew = lastNew;
-    var newCount = orders.filter(function(o){ return o.status==='নতুন অর্ডার'; }).length;
-    allOrd = orders;
-    if(!polling){ lastNew=newCount; polling=true; }
-    else if(newCount > prevNew){
-      var diff=newCount-prevNew; notifCnt+=diff;
-      var badge=document.getElementById('nbadge');
-      var bell=document.getElementById('nbell');
-      if(badge){badge.textContent=notifCnt;badge.style.display='flex';}
-      if(bell){bell.classList.remove('ring');void bell.offsetWidth;bell.classList.add('ring');}
-      playSound();
-      toast('🔔 '+diff+'টি নতুন অর্ডার!','#D4821A');
-      lastNew=newCount;
-    }
-    doFilter();
+  window._fbOrdersCallback=function(orders){
+    renderOrders(orders);
   };
-  allOrd=getOrders();
-  renderStats(allOrd);
-  renderGroups(allOrd);
 }
 
 function renderStats(orders){
@@ -712,16 +697,13 @@ function openDet(btn){
 }
 function odRow(l, v){ return '<div class="od-r"><span class="od-l">' + l + '</span><span class="od-v">' + v + '</span></div>'; }
 function updDet(){
-  var s = document.getElementById('dSel').value;
-  var orders = getOrders();
-  var o = orders.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_') === curSid; });
-  if(!o){ closeM('detModal'); return; }
-  _sb.from('orders').update({status: s}).eq('id', o.id).then(function(r){
-    if(r.error){ toast('❌ '+r.error.message,'#C0392B'); return; }
-    closeM('detModal');
-    loadOrders();
-    toast('✅ আপডেট হয়েছে!','#2D5A27');
-  });
+  var s=document.getElementById('dSel').value;
+  var orders=getOrders();
+  var o=orders.find(function(x){return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===curSid;});
+  if(o && window._firebaseReady && window._fbDB)
+    window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id),{status:s});
+  closeM('detModal');
+  toast('✅ আপডেট হয়েছে!','#2D5A27');
 }
 
 function askDelOrd(btn){
@@ -760,7 +742,7 @@ function renderProds(type){
     html += '<div class="pc-body">';
     if(p.badge) html += '<span class="pc-badge ' + (p.btype||'') + '">' + p.badge + '</span>';
     html += '<div class="pc-name">' + p.name + '</div>';
-    html += '<div class="pc-desc">' + p.desc + '</div>';
+    html += '<div class="pc-desc">' + (p.description||p.desc||'') + '</div>';
     html += '<div class="pc-price">৳' + Number(p.price).toLocaleString() + '/কেজি</div>';
     html += '<div class="qp-box">';
     html += '<input type="number" class="qp-input" id="qp_' + safePid + '" placeholder="নতুন মূল্য"/>';
@@ -782,12 +764,13 @@ function quickPrice(btn){
   if(!inp) return;
   var val = parseFloat(inp.value);
   if(!val || val <= 0){ toast('⚠️ সঠিক মূল্য লিখুন!', '#C0392B'); return; }
-  var tbl = (type==='sb') ? 'sbproducts' : 'products';
-  _sb.from(tbl).update({price: val}).eq('id', pid).then(function(r){
-    if(r.error){ toast('❌ '+r.error.message,'#C0392B'); return; }
-    toast('✅ মূল্য আপডেট হয়েছে!','#2D5A27');
-    loadAllAdminData().then(function(){ renderProds(type); });
-  });
+  var prods = getProds(type);
+  for(var i = 0; i < prods.length; i++){
+    if(String(prods[i].id) === String(pid)){ prods[i].price = val; break; }
+  }
+  setProds(type, prods);
+  renderProds(type);
+  toast('✅ মূল্য আপডেট: ৳' + val.toLocaleString() + '/কেজি', '#2D5A27');
 }
 
 function openAddProd(type){
@@ -810,15 +793,15 @@ function openEditProd(btn){
   }
   if(!p) return;
   document.getElementById('pm-title').textContent = '✏️ পণ্য সম্পাদনা';
-  document.getElementById('pm-name').value = p.name||'';
-  document.getElementById('pm-icon').value = p.icon||'🍯';
-  document.getElementById('pm-desc').value = p.description||p.desc||'';
-  document.getElementById('pm-price').value = p.price||'';
-  document.getElementById('pm-cat').value = p.cat||'';
-  document.getElementById('pm-badge').value = p.badge||'';
-  document.getElementById('pm-btype').value = p.btype||'';
-  document.getElementById('pm-bg').value = p.bg||'';
-  openM('prodModal');
+  document.getElementById('pm-name').value = p.name || '';
+  document.getElementById('pm-icon').value = p.icon || '';
+  document.getElementById('pm-desc').value = (p.description||p.desc||'') || '';
+  document.getElementById('pm-price').value = p.price || '';
+  document.getElementById('pm-cat').value = p.cat || 'ful';
+  document.getElementById('pm-badge').value = p.badge || '';
+  document.getElementById('pm-btype').value = p.btype || '';
+  document.getElementById('pm-bg').value = p.bg || '';
+  document.getElementById('prodModal').classList.add('open');
 }
 
 function saveProd(){
@@ -828,35 +811,35 @@ function saveProd(){
   var price = parseFloat(document.getElementById('pm-price').value);
   if(!name || !icon || !desc || !price){ toast('⚠️ নাম, আইকন, বিবরণ ও মূল্য দিন!', '#C0392B'); return; }
   var obj = {
-    name: name, icon: icon, description: desc, price: price,
+    name: name, icon: icon, desc: desc, price: price,
     cat: document.getElementById('pm-cat').value,
     badge: document.getElementById('pm-badge').value.trim(),
     btype: document.getElementById('pm-btype').value,
     bg: document.getElementById('pm-bg').value.trim() || '#FFF8E1,#FFF3CD'
   };
-  var tbl = (curProdType === 'sb') ? 'sbproducts' : 'products';
-  var isEdit = !!curProdId;
-  var promise = isEdit
-    ? _sb.from(tbl).update(obj).eq('id', curProdId)
-    : _sb.from(tbl).insert([obj]);
-  promise.then(function(r){
-    if(r.error){ toast('❌ ' + r.error.message, '#C0392B'); return; }
-    toast(isEdit ? '✅ পণ্য আপডেট হয়েছে!' : '✅ নতুন পণ্য যোগ হয়েছে!', '#2D5A27');
-    closeM('prodModal');
-    loadAllAdminData().then(function(){ renderProds(curProdType); });
-  });
+  var prods = getProds(curProdType);
+  if(curProdId){
+    for(var i = 0; i < prods.length; i++){
+      if(String(prods[i].id) === String(curProdId)){ Object.assign(prods[i], obj); break; }
+    }
+  } else {
+    obj.id = (curProdType === 'sb') ? 'sb_' + Date.now() : Date.now();
+    prods.push(obj);
+  }
+  setProds(curProdType, prods);
+  closeM('prodModal');
+  renderProds(curProdType);
+  toast(curProdId ? '✅ পণ্য আপডেট হয়েছে!' : '✅ নতুন পণ্য যোগ হয়েছে!', '#2D5A27');
 }
 
 function askDelProd(btn){
   var type = btn.getAttribute('data-type');
   var id = btn.getAttribute('data-id');
   confirm2('এই পণ্যটি মুছে দেবেন?', function(){
-    var tbl = (type==='sb') ? 'sbproducts' : 'products';
-    _sb.from(tbl).delete().eq('id', id).then(function(r){
-      if(r.error){ toast('❌ '+r.error.message,'#C0392B'); return; }
-      toast('🗑️ পণ্য মুছে গেছে','#C0392B');
-      loadAllAdminData().then(function(){ renderProds(type); });
-    });
+    var prods = getProds(type).filter(function(p){ return String(p.id) !== String(id); });
+    setProds(type, prods);
+    renderProds(type);
+    toast('🗑️ পণ্য মুছে গেছে', '#C0392B');
   });
 }
 
@@ -903,7 +886,7 @@ function openEditRev(btn){
   document.getElementById('rm-title').textContent = '✏️ মতামত সম্পাদনা';
   document.getElementById('rm-name').value = r.name || '';
   document.getElementById('rm-loc').value = r.loc || '';
-  document.getElementById('rm-text').value = r.text || '';
+  document.getElementById('rm-text').value = (r.review_text||r.text||'') || '';
   document.getElementById('rm-stars').value = r.stars || 5;
   document.getElementById('revModal').classList.add('open');
 }
@@ -912,37 +895,28 @@ function saveRev(){
   var name = document.getElementById('rm-name').value.trim();
   var text = document.getElementById('rm-text').value.trim();
   if(!name || !text){ toast('⚠️ নাম ও মতামত দিন!', '#C0392B'); return; }
-  var obj = {
-    name: name,
-    loc: document.getElementById('rm-loc').value.trim(),
-    stars: parseInt(document.getElementById('rm-stars').value)||5,
-    review_text: text
-  };
-  var isEdit = (curRevIdx !== null);
   var revs = getRevs();
-  var existingId = isEdit ? revs[curRevIdx].id : null;
-  var promise = isEdit
-    ? _sb.from('reviews').update(obj).eq('id', existingId)
-    : _sb.from('reviews').insert([obj]);
-  promise.then(function(r){
-    if(r.error){ toast('❌ '+r.error.message,'#C0392B'); return; }
-    toast(isEdit ? '✅ মতামত আপডেট!' : '✅ মতামত যোগ হয়েছে!','#2D5A27');
-    closeM('revModal');
-    _sb.from('reviews').select('*').order('id').then(function(res){
-      window._sbReviews = res.data||[]; renderRevs();
-    });
-  });
+  var obj = {
+    name: name, loc: document.getElementById('rm-loc').value.trim(),
+    stars: parseInt(document.getElementById('rm-stars').value) || 5,
+    text: text, ts: Date.now()
+  };
+  if(curRevIdx !== null) revs[curRevIdx] = obj;
+  else revs.push(obj);
+  setRevs(revs);
+  closeM('revModal');
+  renderRevs();
+  toast(curRevIdx !== null ? '✅ মতামত আপডেট!' : '✅ মতামত যোগ হয়েছে!', '#2D5A27');
 }
 
-function askDelRev(idx, id){
-  confirm2('এই মতামত মুছবেন?', function(){
-    _sb.from('reviews').delete().eq('id', id).then(function(r){
-      if(r.error){ toast('❌ '+r.error.message,'#C0392B'); return; }
-      toast('🗑️ মতামত মুছে গেছে','#C0392B');
-      _sb.from('reviews').select('*').order('id').then(function(res){
-        window._sbReviews=res.data||[]; renderRevs();
-      });
-    });
+function askDelRev(btn){
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  confirm2('এই মতামতটি মুছে দেবেন?', function(){
+    var revs = getRevs();
+    revs.splice(idx, 1);
+    setRevs(revs);
+    renderRevs();
+    toast('🗑️ মতামত মুছে গেছে', '#C0392B');
   });
 }
 
@@ -999,7 +973,7 @@ function saveWS(){
 }
 
 // ---- NOTIFICATIONS ----
-function startPoll(){ /* Supabase real-time handles this */ }
+function startPoll(){ /* Firebase real-time handles this */ }
 function clearNotif(){
   notifCnt = 0;
   var b = document.getElementById('nbadge');
