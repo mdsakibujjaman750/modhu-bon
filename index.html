@@ -250,54 +250,65 @@ footer{background:var(--brown);color:rgba(255,255,255,.75);padding:2.5rem 4% 1.5
 .mo-hint{font-size:.8rem;color:var(--brown-l);text-align:center;margin-bottom:1rem;padding:.6rem;background:var(--cream);border-radius:8px}
 @media(max-width:700px){.nav-links{display:none}.hero::after{display:none}.foot-grid{grid-template-columns:1fr}.contact-info{grid-template-columns:1fr}.form-row2{grid-template-columns:1fr}.arf-grid{grid-template-columns:1fr}}
 </style>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD8ixO1HwtDlAkt-zqx23fIU8kUBpFb28I",
-  authDomain: "modhu--bon.firebaseapp.com",
-  databaseURL: "https://modhu--bon-default-rtdb.firebaseio.com",
-  projectId: "modhu--bon",
-  storageBucket: "modhu--bon.firebasestorage.app",
-  messagingSenderId: "942439122447",
-  appId: "1:942439122447:web:677dce98ab39895bf5057a"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-window._fbDB = db;
-window._fbRef = ref;
-window._fbPush = push;
-window._fbOnValue = onValue;
-window._fbSet = set;
-window._fbGet = get;
-window._firebaseReady = true;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══ SUPABASE CONFIG ══
+const _sb = supabase.createClient('https://whywhurqqmggpongxphl.supabase.co', 'Sb_publishable_KEs3jkEhE3RZdGXNEvfTVw_FOznDYD7');
 
 function applyFB(){
-  if(!window._pageReady) return;
-  applyWebSettings();
-  renderProducts();
-  renderSB();
-  renderReviews();
+  if(!window._pageReady){ setTimeout(applyFB,100); return; }
+  try{ applyWebSettings(); }catch(e){}
+  try{ renderProducts(); }catch(e){}
+  try{ renderSB(); }catch(e){}
+  try{ renderReviews(); }catch(e){}
 }
 
-// Real-time listeners - fires immediately on load AND on every change
-onValue(ref(db,'products'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbProducts = Array.isArray(d)?d:Object.values(d); }
+// Load all data from Supabase
+async function loadAllData(){
+  // Products
+  var r1 = await _sb.from('products').select('*').order('id');
+  if(r1.data && r1.data.length) window._sbProducts = r1.data;
+
+  // SB Products
+  var r2 = await _sb.from('sbproducts').select('*').order('id');
+  if(r2.data && r2.data.length) window._sbSBProducts = r2.data;
+
+  // Reviews
+  var r3 = await _sb.from('reviews').select('*').order('id');
+  if(r3.data && r3.data.length) window._sbReviews = r3.data;
+
+  // Settings (modhu-bon table, row id=1)
+  var r4 = await _sb.from('Modhu-bon').select('*').limit(1).single();
+  if(r4.data) window._sbSettings = r4.data;
+
   applyFB();
-});
-onValue(ref(db,'sbproducts'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbSBProducts = Array.isArray(d)?d:Object.values(d); }
-  applyFB();
-});
-onValue(ref(db,'reviews'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbReviews = Array.isArray(d)?d:Object.values(d); }
-  applyFB();
-});
-onValue(ref(db,'settings'), function(s){
-  if(s.exists()) window._fbSettings = s.val();
-  applyFB();
-});
+}
+
+// Real-time listeners
+_sb.channel('shop-changes')
+  .on('postgres_changes', {event:'*', schema:'public', table:'products'}, function(){
+    _sb.from('products').select('*').order('id').then(function(r){
+      if(r.data) window._sbProducts=r.data; applyFB();
+    });
+  })
+  .on('postgres_changes', {event:'*', schema:'public', table:'sbproducts'}, function(){
+    _sb.from('sbproducts').select('*').order('id').then(function(r){
+      if(r.data) window._sbSBProducts=r.data; applyFB();
+    });
+  })
+  .on('postgres_changes', {event:'*', schema:'public', table:'reviews'}, function(){
+    _sb.from('reviews').select('*').order('id').then(function(r){
+      if(r.data) window._sbReviews=r.data; applyFB();
+    });
+  })
+  .on('postgres_changes', {event:'*', schema:'public', table:'Modhu-bon'}, function(){
+    _sb.from('Modhu-bon').select('*').limit(1).single().then(function(r){
+      if(r.data) window._sbSettings=r.data; applyFB();
+    });
+  })
+  .subscribe();
+
+loadAllData();
 </script>
 </head>
 <body>
@@ -510,26 +521,22 @@ var DEFAULT_REVIEWS=[
 // STORAGE HELPERS
 // ══════════════════════════════════════
 function getProducts(){
-  if(window._fbProducts) return window._fbProducts;
-  try{var s=localStorage.getItem('modhu_products');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}
+  if(window._sbProducts && window._sbProducts.length) return window._sbProducts;
+  return DEFAULTS;
 }
 function getSBProducts(){
-  if(window._fbSBProducts) return window._fbSBProducts;
-  try{var s=localStorage.getItem('modhu_sb_products');return s?JSON.parse(s):SB_DEFAULTS;}catch(e){return SB_DEFAULTS;}
+  if(window._sbSBProducts && window._sbSBProducts.length) return window._sbSBProducts;
+  return SB_DEFAULTS;
 }
 function getReviews(){
-  if(window._fbReviews) return window._fbReviews;
-  try{var s=localStorage.getItem('modhu_reviews');return s?JSON.parse(s):DEFAULT_REVIEWS;}catch(e){return DEFAULT_REVIEWS;}
+  if(window._sbReviews && window._sbReviews.length) return window._sbReviews;
+  return DEFAULT_REVIEWS;
 }
 function setReviews(a){
-  window._fbReviews = a;
-  if(window._firebaseReady && window._fbDB){
-    window._fbSet(window._fbRef(window._fbDB, 'reviews'), a);
-  }
-  localStorage.setItem('modhu_reviews',JSON.stringify(a));
+  // not used directly — submitReview inserts to Supabase
 }
 function getWS(key,fallback){
-  var src = window._fbSettings || (function(){try{var s=localStorage.getItem('modhu_websettings');return s?JSON.parse(s):{};}catch(e){return{};}})();
+  var src = window._sbSettings || {};
   return src[key]||fallback;
 }
 
@@ -549,7 +556,7 @@ function renderProducts(filter){
     html+='<div class="prod-card" style="animation-delay:'+(i*.07)+'s">'
       +badge
       +'<div class="prod-img" style="background:linear-gradient(135deg,'+(p.bg||'#FFF8E1,#FFF3CD')+')">'+p.icon+'</div>'
-      +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+p.desc+'</p>'
+      +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+(p.description||p.desc||'')+'</p>'
       +'<div class="prod-bottom">'
       +'<div class="prod-price">৳'+Number(p.price).toLocaleString()+' <span>/কেজি</span></div>'
       +'<div class="prod-actions">'
@@ -566,7 +573,7 @@ function renderSB(){
     var p=prods[i];
     html+='<div class="sb-card" style="animation-delay:'+(i*.08)+'s">'
       +'<div class="icon">'+p.icon+'</div>'
-      +'<h4>'+p.name+'</h4><p>'+p.desc+'</p>'
+      +'<h4>'+p.name+'</h4><p>'+(p.description||p.desc||'')+'</p>'
       +'<div class="sb-price">৳ '+Number(p.price).toLocaleString()+'</div>'
       +'<div class="sb-btns">'
       +'<button class="btn-cart" data-id="'+p.id+'" data-name="'+encodeURIComponent(p.name)+'" data-price="'+p.price+'" data-icon="'+encodeURIComponent(p.icon)+'" onclick="handleCartBtn(this)">🛒 কার্ট</button>'
@@ -626,9 +633,15 @@ function submitReview(){
   var loc=document.getElementById('rvLoc').value.trim();
   var text=document.getElementById('rvText').value.trim();
   if(!name||!text){showToast('⚠️ নাম ও মতামত আবশ্যক!','#C0392B');return;}
-  var reviews=getReviews();
-  reviews.push({name:name,loc:loc,stars:selectedStars,text:text,ts:Date.now()});
-  setReviews(reviews);
+  // Insert review to Supabase
+  _sb.from('reviews').insert([{name:name,loc:loc,stars:selectedStars,review_text:text}]).then(function(r){
+    if(!r.error){
+      // reload reviews
+      _sb.from('reviews').select('*').order('id').then(function(res){
+        if(res.data){ window._sbReviews=res.data; renderReviews(true); }
+      });
+    }
+  });
   renderReviews(true);
   // close form, clear fields
   document.getElementById('revForm').classList.remove('open');
@@ -768,18 +781,23 @@ function submitOrder(){
     var qty=document.getElementById('oQty').value;
     newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:currentOrder.price,qty:qty,name:name,phone:phone,address:address,payment:payment,note:note,time:ts,status:'নতুন অর্ডার'});
   }
-  // Save to Firebase if available, else localStorage fallback
-  if(window._firebaseReady && window._fbDB){
-    var ordersRef = window._fbRef(window._fbDB, 'orders');
-    newOrders.forEach(function(ord){
-      window._fbPush(ordersRef, ord);
-    });
-  } else {
-    // localStorage fallback
-    var orders=[];try{orders=JSON.parse(localStorage.getItem('modhu_orders')||'[]');}catch(e){}
-    newOrders.forEach(function(ord){ ord.id='ORD-'+Date.now(); orders.unshift(ord); });
-    localStorage.setItem('modhu_orders',JSON.stringify(orders));
-  }
+  // Save to Supabase
+  newOrders.forEach(function(ord){
+    _sb.from('orders').insert([{
+      product: ord.product,
+      icon: ord.icon,
+      price: ord.price,
+      unit_price: ord.unitPrice||ord.price,
+      qty: ord.qty,
+      name: ord.name,
+      phone: ord.phone,
+      address: ord.address,
+      payment: ord.payment,
+      note: ord.note,
+      time: ord.time,
+      status: 'নতুন অর্ডার'
+    }]);
+  });
   closeOrder();
   showToast('🎉 অর্ডার সফলভাবে গ্রহণ হয়েছে!','#2D5A27');
   ['oName','oPhone','oAddress','oNote'].forEach(function(id){document.getElementById(id).value='';});
@@ -796,26 +814,11 @@ function openMyOrders(){
 }
 function closeMyOrders(){document.getElementById('myOrdersModal').classList.remove('open');}
 function searchMyOrders(){
-  var q=document.getElementById('moSearch').value.trim();
-  var listEl=document.getElementById('myOrdersList');
-  if(q.length<5){listEl.innerHTML='<div class="mo-empty"><span>🔍</span>কমপক্ষে ৫ সংখ্যা দিন</div>';return;}
-  listEl.innerHTML='<div class="mo-empty"><span>⏳</span>খুঁজছি...</div>';
-  if(window._firebaseReady && window._fbDB){
-    var ordersRef = window._fbRef(window._fbDB, 'orders');
-    window._fbGet(ordersRef).then(function(snap){
-      var orders=[];
-      if(snap.exists()){
-        var data=snap.val();
-        Object.keys(data).forEach(function(k){ var o=data[k]; o.id=k; orders.unshift(o); });
-      }
-      var found=orders.filter(function(o){return (o.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));});
-      renderMyOrders(found);
-    });
-    return;
-  }
-  var orders=[];try{orders=JSON.parse(localStorage.getItem('modhu_orders')||'[]');}catch(e){}
-  var found=orders.filter(function(o){return (o.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));});
-  renderMyOrders(found);
+  var phone=document.getElementById('myPhone').value.trim();
+  if(!phone){showToast('⚠️ ফোন নম্বর দিন!','#C0392B');return;}
+  _sb.from('orders').select('*').eq('phone',phone).order('id',{ascending:false}).then(function(r){
+    renderMyOrders(r.data||[]);
+  });
 }
 function renderMyOrders(found){
   var listEl=document.getElementById('myOrdersList');
