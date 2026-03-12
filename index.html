@@ -501,7 +501,7 @@ onValue(ref(db,'settings'), function(s){
 
     <div class="fg" style="margin-bottom:.4rem">
       <label>পেমেন্ট পদ্ধতি ★</label>
-      <input type="hidden" id="oPayment" value="ক্যাশ অন ডেলিভারি"/>
+      <input type="hidden" id="oPayment" value="বিকাশ (ডেলিভারি)"/>
       <input type="hidden" id="oPayMode" value="cod"/>
     </div>
 
@@ -523,7 +523,7 @@ onValue(ref(db,'settings'), function(s){
         <!-- COD online method buttons -->
         <div style="font-size:.75rem;font-weight:700;color:#A85C0A;margin-bottom:.35rem">কোন মাধ্যমে পাঠাবেন?</div>
         <div class="pay-toggle-row" style="margin:0 0 .5rem">
-          <button class="pay-sub-btn active" onclick="selSubPay('বিকাশ (ডেলিভারি)',this,'cod')"><span class="pay-icon bkash-icon" style="font-size:.65rem;font-weight:900;letter-spacing:-.5px">bKash</span>বিকাশ</button>
+          <button class="pay-sub-btn active" id="defaultSubBtn" onclick="selSubPay('বিকাশ (ডেলিভারি)',this,'cod')"><span class="pay-icon bkash-icon" style="font-size:.65rem;font-weight:900;letter-spacing:-.5px">bKash</span>বিকাশ</button>
           <button class="pay-sub-btn" onclick="selSubPay('নগদ (ডেলিভারি)',this,'cod')"><span class="pay-icon nagad-icon" style="font-size:.65rem;font-weight:900">নগদ</span>নগদ</button>
           <button class="pay-sub-btn" onclick="selSubPay('রকেট (ডেলিভারি)',this,'cod')"><span class="pay-icon rocket-icon" style="font-size:.7rem;font-weight:900">🚀</span>রকেট</button>
         </div>
@@ -991,10 +991,9 @@ function selMainPay(mode, btn){
   if(mode === 'cod'){
     codBox.style.display = 'block';
     fullBox.style.display = 'none';
-    // No sub selected yet = pure COD
-    document.getElementById('oPayment').value = 'ক্যাশ অন ডেলিভারি';
-    // Reset sub buttons
-    document.querySelectorAll('#codBox .pay-sub-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById('oPayment').value = 'বিকাশ (ডেলিভারি)';
+    // Default বিকাশ active
+    document.querySelectorAll('#codBox .pay-sub-btn').forEach(function(b,i){ b.classList.toggle('active',i===0); });
   } else {
     codBox.style.display = 'none';
     fullBox.style.display = 'block';
@@ -1065,14 +1064,9 @@ function submitOrder(){
   if(!upazila){ showToast('⚠️ উপজেলা বেছে নিন!','#C0392B'); return; }
   if(!addrBase){ showToast('⚠️ সম্পূর্ণ ঠিকানা দিন!','#C0392B'); return; }
 
-  // ══ TrxID — সব ক্ষেত্রে লাগবে (pure COD ছাড়া) ══
-  var trxId='';
-  var isPureCOD = (payMode==='cod' && payment==='ক্যাশ অন ডেলিভারি');
-  if(!isPureCOD){
-    var trxField = payMode==='full' ? 'oTrxIdFull' : 'oTrxId';
-    trxId=(document.getElementById(trxField)||{value:''}).value.trim();
-    if(!trxId){ showToast('⚠️ TrxID / ট্রানজেকশন নম্বর দিন!','#C0392B'); return; }
-  }
+  // ══ TrxID সবসময় required ══
+  var trxId=(document.getElementById('oTrxId')||{value:''}).value.trim();
+  if(!trxId){ showToast('⚠️ TrxID / ট্রানজেকশন নম্বর দিন!','#C0392B'); return; }
 
   var address=[addrBase,upazila,district,'বাংলাদেশ'].filter(Boolean).join(', ');
   var isSatkhiraSadar2=(district==='সাতক্ষীরা'&&upazila==='সাতক্ষীরা সদর');
@@ -1111,7 +1105,7 @@ function submitOrder(){
   var ci=document.getElementById('codChargeInfo'); if(ci) ci.style.display='none';
   var fi=document.getElementById('fullTotalInfo'); if(fi) fi.style.display='none';
   // Reset to COD
-  document.getElementById('oPayment').value='ক্যাশ অন ডেলিভারি';
+  document.getElementById('oPayment').value='বিকাশ (ডেলিভারি)';
   document.getElementById('oPayMode').value='cod';
   var cb2=document.getElementById('codBox'); if(cb2) cb2.style.display='block';
   var fb2=document.getElementById('fullPayBox'); if(fb2) fb2.style.display='none';
