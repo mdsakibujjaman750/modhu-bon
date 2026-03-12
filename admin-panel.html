@@ -207,18 +207,32 @@ window._fbGet = get;
 window._fbSet = set;
 window._firebaseReady = true;
 
-// Orders — real-time
+var _prevOrderCount = null;
+
+// Orders real-time
 onValue(ref(db,'orders'), function(snap){
-  var orders=[];
+  var orders = [];
   if(snap.exists()){
-    var data=snap.val();
+    var data = snap.val();
     Object.keys(data).forEach(function(k){ var o=data[k]; o.id=k; orders.unshift(o); });
   }
-  window._fbOrders=orders;
+  window._fbOrders = orders;
+
+  // New order notification
+  if(_prevOrderCount !== null && orders.length > _prevOrderCount){
+    playOrderSound();
+    showOrderNotif(orders[0]);
+  }
+  _prevOrderCount = orders.length;
+
   if(window._fbOrdersCallback) window._fbOrdersCallback(orders);
+  else {
+    var dash = document.getElementById('dash');
+    if(dash && dash.style.display !== 'none') renderOrders(orders);
+  }
 });
 
-// Products / SB / Reviews / Settings — real-time
+// Products / SB / Reviews / Settings real-time
 onValue(ref(db,'products'), function(s){
   if(s.exists()){ var d=s.val(); window._fbProducts=Array.isArray(d)?d:Object.values(d); }
 });
@@ -229,20 +243,14 @@ onValue(ref(db,'reviews'), function(s){
   if(s.exists()){ var d=s.val(); window._fbReviews=Array.isArray(d)?d:Object.values(d); }
 });
 onValue(ref(db,'settings'), function(s){
-  if(s.exists()) window._fbSettings=s.val();
+  if(s.exists()) window._fbSettings = s.val();
 });
 
-// Firebase খালি থাকলে default data upload করো
+// Firebase খালি থাকলে default data upload
 setTimeout(function(){
-  get(ref(db,'products')).then(function(s){
-    if(!s.exists()){ set(ref(db,'products'), defMain()); }
-  });
-  get(ref(db,'sbproducts')).then(function(s){
-    if(!s.exists()){ set(ref(db,'sbproducts'), defSB()); }
-  });
-  get(ref(db,'reviews')).then(function(s){
-    if(!s.exists()){ set(ref(db,'reviews'), defRevs()); }
-  });
+  get(ref(db,'products')).then(function(s){ if(!s.exists()) set(ref(db,'products'), defMain()); });
+  get(ref(db,'sbproducts')).then(function(s){ if(!s.exists()) set(ref(db,'sbproducts'), defSB()); });
+  get(ref(db,'reviews')).then(function(s){ if(!s.exists()) set(ref(db,'reviews'), defRevs()); });
 }, 3000);
 </script>
 </head>
@@ -452,7 +460,7 @@ function showDash(){
   loadOrders();
 }
 function checkSession(){
-  var exp=localStorage.getItem('modhu_admin_session');
+  var exp = localStorage.getItem('modhu_admin_session');
   if(exp && Date.now()<parseInt(exp)){ showDash(); return true; }
   localStorage.removeItem('modhu_admin_session');
   return false;
@@ -489,28 +497,26 @@ function getProds(t){
   return window._fbProducts||defMain();
 }
 function setProds(t, a){
-  var fbKey=(t==='sb')?'sbproducts':'products';
+  var fbKey = (t==='sb') ? 'sbproducts' : 'products';
   if(t==='sb') window._fbSBProducts=a; else window._fbProducts=a;
   if(window._firebaseReady && window._fbDB)
     window._fbSet(window._fbRef(window._fbDB, fbKey), a);
-  localStorage.setItem((t==='sb')?'modhu_sb_products':'modhu_products', JSON.stringify(a));
 }
 function getRevs(){
   if(window._fbReviews && window._fbReviews.length) return window._fbReviews;
   return defRevs();
 }
 function setRevs(a){
-  window._fbReviews=a;
+  window._fbReviews = a;
   if(window._firebaseReady && window._fbDB)
     window._fbSet(window._fbRef(window._fbDB,'reviews'), a);
-  localStorage.setItem('modhu_reviews', JSON.stringify(a));
 }
 function getWS(){
   if(window._fbSettings) return window._fbSettings;
   try{return JSON.parse(localStorage.getItem('modhu_websettings')||'{}');}catch(e){return {};}
 }
 function setWS(o){
-  window._fbSettings=o;
+  window._fbSettings = o;
   if(window._firebaseReady && window._fbDB)
     window._fbSet(window._fbRef(window._fbDB,'settings'), o);
   localStorage.setItem('modhu_websettings', JSON.stringify(o));
@@ -548,9 +554,16 @@ var allOrd = [], lastNew = 0, notifCnt = 0, polling = false;
 var STATS = ['নতুন অর্ডার','নিশ্চিত','প্রক্রিয়াধীন','ডেলিভারি দেওয়া হয়েছে','বাতিল'];
 
 function loadOrders(){
-  window._fbOrdersCallback=function(orders){
+  window._fbOrdersCallback = function(orders){
     renderOrders(orders);
   };
+  if(window._fbOrders) renderOrders(window._fbOrders);
+}
+
+function renderOrders(orders){
+  allOrd = orders;
+  renderStats(orders);
+  renderGroups(orders);
 }
 
 function renderStats(orders){
@@ -657,16 +670,15 @@ function clearF(){
 function cycStat(btn){
   var sid = btn.getAttribute('data-oid');
   var orders = getOrders();
-  var o = orders.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_') === sid; });
+  var o = orders.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===sid; });
   if(!o) return;
   var idx = STATS.indexOf(o.status);
-  o.status = STATS[(idx + 1) % STATS.length];
-  setOrders(orders);
-  allOrd = orders;
-  btn.textContent = o.status;
-  btn.className = 'sbadge ' + sCls(o.status);
-  renderStats(allOrd);
-  toast('✅ স্ট্যাটাস: ' + o.status, '#2D5A27');
+  var next = STATS[(idx+1)%STATS.length];
+  if(window._firebaseReady && window._fbDB)
+    window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id), {status:next});
+  btn.textContent = next;
+  btn.className = 'sbadge ' + sCls(next);
+  toast('✅ স্ট্যাটাস: '+next, '#2D5A27');
 }
 
 var curSid = null;
@@ -697,31 +709,35 @@ function openDet(btn){
 }
 function odRow(l, v){ return '<div class="od-r"><span class="od-l">' + l + '</span><span class="od-v">' + v + '</span></div>'; }
 function updDet(){
-  var s=document.getElementById('dSel').value;
-  var orders=getOrders();
-  var o=orders.find(function(x){return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===curSid;});
+  var s = document.getElementById('dSel').value;
+  var o = allOrd.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===curSid; });
   if(o && window._firebaseReady && window._fbDB)
-    window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id),{status:s});
+    window._fbUpdate(window._fbRef(window._fbDB,'orders/'+o.id), {status:s});
   closeM('detModal');
   toast('✅ আপডেট হয়েছে!','#2D5A27');
 }
 
 function askDelOrd(btn){
   var sid = btn.getAttribute('data-oid');
+  var orders = getOrders();
+  var o = orders.find(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_')===sid; });
   confirm2('এই অর্ডারটি মুছে দেবেন?', function(){
-    var orders = getOrders().filter(function(x){ return String(x.id).replace(/[^a-zA-Z0-9\-]/g,'_') !== sid; });
-    setOrders(orders); allOrd = orders;
-    doFilter(); renderStats(allOrd);
-    toast('🗑️ মুছে গেছে', '#C0392B');
+    if(o && window._firebaseReady && window._fbDB)
+      window._fbRemove(window._fbRef(window._fbDB,'orders/'+o.id));
+    toast('🗑️ মুছে গেছে','#C0392B');
   });
 }
 function askDelGrp(btn){
   var pk = decodeURIComponent(btn.getAttribute('data-pk')).split('__');
-  confirm2(pk[1] + ' এর সব অর্ডার মুছবেন?', function(){
-    var orders = getOrders().filter(function(o){ return !((o.phone||'') === pk[0] && (o.name||'') === pk[1]); });
-    setOrders(orders); allOrd = orders;
-    doFilter(); renderStats(allOrd);
-    toast('🗑️ সব অর্ডার মুছে গেছে', '#C0392B');
+  confirm2(pk[1]+' এর সব অর্ডার মুছবেন?', function(){
+    var orders = getOrders().filter(function(o){ return !((o.phone||'')===pk[0] && (o.name||'')===pk[1]); });
+    orders.forEach(function(o){});
+    // Delete each from Firebase
+    if(window._firebaseReady && window._fbDB){
+      getOrders().filter(function(o){ return (o.phone||'')===pk[0] && (o.name||'')===pk[1]; })
+        .forEach(function(o){ window._fbRemove(window._fbRef(window._fbDB,'orders/'+o.id)); });
+    }
+    toast('🗑️ সব অর্ডার মুছে গেছে','#C0392B');
   });
 }
 
@@ -742,7 +758,7 @@ function renderProds(type){
     html += '<div class="pc-body">';
     if(p.badge) html += '<span class="pc-badge ' + (p.btype||'') + '">' + p.badge + '</span>';
     html += '<div class="pc-name">' + p.name + '</div>';
-    html += '<div class="pc-desc">' + (p.description||p.desc||'') + '</div>';
+    html += '<div class="pc-desc">' + p.desc + '</div>';
     html += '<div class="pc-price">৳' + Number(p.price).toLocaleString() + '/কেজি</div>';
     html += '<div class="qp-box">';
     html += '<input type="number" class="qp-input" id="qp_' + safePid + '" placeholder="নতুন মূল্য"/>';
@@ -795,7 +811,7 @@ function openEditProd(btn){
   document.getElementById('pm-title').textContent = '✏️ পণ্য সম্পাদনা';
   document.getElementById('pm-name').value = p.name || '';
   document.getElementById('pm-icon').value = p.icon || '';
-  document.getElementById('pm-desc').value = (p.description||p.desc||'') || '';
+  document.getElementById('pm-desc').value = p.desc || '';
   document.getElementById('pm-price').value = p.price || '';
   document.getElementById('pm-cat').value = p.cat || 'ful';
   document.getElementById('pm-badge').value = p.badge || '';
@@ -859,7 +875,7 @@ function renderRevs(){
     html += '<div class="rc-body">';
     html += '<div class="rc-stars">' + stars + '</div>';
     html += '<div class="rc-name">' + r.name + ' <span class="rc-loc">— ' + (r.loc||'') + '</span></div>';
-    html += '<p class="rc-text">"' + (r.review_text||r.text||'') + '"</p>';
+    html += '<p class="rc-text">"' + r.text + '"</p>';
     html += '</div>';
     html += '<div class="rc-acts">';
     html += '<button class="rc-edit-btn" data-idx="' + i + '" onclick="openEditRev(this)">✏️ Edit</button>';
@@ -886,7 +902,7 @@ function openEditRev(btn){
   document.getElementById('rm-title').textContent = '✏️ মতামত সম্পাদনা';
   document.getElementById('rm-name').value = r.name || '';
   document.getElementById('rm-loc').value = r.loc || '';
-  document.getElementById('rm-text').value = (r.review_text||r.text||'') || '';
+  document.getElementById('rm-text').value = r.text || '';
   document.getElementById('rm-stars').value = r.stars || 5;
   document.getElementById('revModal').classList.add('open');
 }
@@ -973,7 +989,7 @@ function saveWS(){
 }
 
 // ---- NOTIFICATIONS ----
-function startPoll(){ /* Firebase real-time handles this */ }
+function startPoll(){ /* Firebase real-time */ }
 function clearNotif(){
   notifCnt = 0;
   var b = document.getElementById('nbadge');
@@ -1033,6 +1049,42 @@ if(!localStorage.getItem('modhu_orders')){
       {id:'ORD-1004', product:'বাইন ফুলের মধু', icon:'🌸', price:900, name:'সুমাইয়া আক্তার', phone:'01956781234', address:'সিলেট', qty:'১ কেজি', payment:'নগদ', note:'', time:'০৯/০৩/২০২৫', status:'ডেলিভারি দেওয়া হয়েছে'}
     ]));
 }
+// ══ NOTIFICATION + SOUND ══
+function playOrderSound(){
+  try{
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    var notes = [523,659,784,1047];
+    notes.forEach(function(freq, i){
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.3);
+      osc.start(ctx.currentTime + i*0.15);
+      osc.stop(ctx.currentTime + i*0.15 + 0.3);
+    });
+  }catch(e){}
+}
+
+function showOrderNotif(order){
+  var el = document.getElementById('orderNotif');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'orderNotif';
+    el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:linear-gradient(135deg,#2D5A27,#3A7A30);color:white;padding:1rem 1.4rem;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.35);min-width:260px;font-family:Hind Siliguri,sans-serif;transform:translateX(120%);transition:transform .4s cubic-bezier(.34,1.56,.64,1)';
+    document.body.appendChild(el);
+  }
+  if(order){
+    el.innerHTML = '<div style="font-size:.8rem;opacity:.8;margin-bottom:.3rem">🔔 নতুন অর্ডার!</div>'
+      +'<div style="font-weight:700;font-size:1rem">'+order.product+'</div>'
+      +'<div style="font-size:.85rem;opacity:.9;margin-top:.2rem">👤 '+order.name+' | ৳'+Number(order.price||0).toLocaleString()+'</div>';
+  }
+  setTimeout(function(){ el.style.transform='translateX(0)'; }, 10);
+  setTimeout(function(){ el.style.transform='translateX(120%)'; }, 5000);
+}
+
 </script>
 </body>
 </html>
