@@ -318,6 +318,7 @@ setTimeout(function(){
       <li><div class="sb-item" id="nav-products" onclick="go('products','nav-products')">🍯 পণ্য — Add / Edit / Remove</div></li>
       <li><div class="sb-item" id="nav-sbproducts" onclick="go('sbproducts','nav-sbproducts')">🌳 সুন্দরবন পণ্য</div></li>
       <div class="sb-sep"></div>
+      <li><div class="sb-item" id="nav-promo" onclick="go('promo','nav-promo')">🎟️ প্রোমো কোড</div></li>
       <li><div class="sb-item" id="nav-reviews" onclick="go('reviews','nav-reviews')">💬 মতামত ব্যবস্থাপনা</div></li>
       <li><div class="sb-item" id="nav-settings" onclick="go('settings','nav-settings')">⚙️ ওয়েবসাইট সেটিং</div></li>
     </ul>
@@ -396,6 +397,45 @@ setTimeout(function(){
       </div>
       <div class="prod-grid" id="sbgrid"></div>
     </div>
+    <div class="page" id="page-promo">
+      <div class="topbar"><h1>🎟️ প্রোমো কোড ম্যানেজমেন্ট</h1></div>
+
+      <!-- Create promo -->
+      <div style="background:white;border-radius:20px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(59,31,10,.08)">
+        <h3 style="color:var(--amber-d);margin-bottom:1.2rem;font-size:1rem">➕ নতুন প্রোমো কোড তৈরি করুন</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem">
+          <div>
+            <label style="font-size:.78rem;font-weight:700;color:#5A3A1A;display:block;margin-bottom:.3rem">কোড ★</label>
+            <input id="promoCode" type="text" placeholder="যেমন: MODHU20" style="width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.55rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:700;color:#5A3A1A;display:block;margin-bottom:.3rem">ডিসকাউন্ট (%) ★</label>
+            <input id="promoDiscount" type="number" placeholder="যেমন: 10" min="1" max="80" style="width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.55rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:700;color:#5A3A1A;display:block;margin-bottom:.3rem">সর্বনিম্ন কেনাকাটা (৳)</label>
+            <input id="promoMinOrder" type="number" placeholder="যেমন: 500" min="0" style="width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.55rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:700;color:#5A3A1A;display:block;margin-bottom:.3rem">সর্বোচ্চ ছাড় (৳) <span style="opacity:.6">(ঐচ্ছিক)</span></label>
+            <input id="promoMaxDiscount" type="number" placeholder="যেমন: 200" min="0" style="width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.55rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:700;color:#5A3A1A;display:block;margin-bottom:.3rem">মেয়াদ শেষ <span style="opacity:.6">(ঐচ্ছিক)</span></label>
+            <input id="promoExpiry" type="date" style="width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.55rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:700;color:#5A3A1A;display:block;margin-bottom:.3rem">ব্যবহারের সীমা <span style="opacity:.6">(ঐচ্ছিক)</span></label>
+            <input id="promoUsageLimit" type="number" placeholder="যেমন: 50" min="0" style="width:100%;border:2px solid #E8D5B0;border-radius:10px;padding:.55rem .9rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none"/>
+          </div>
+        </div>
+        <button onclick="createPromo()" style="background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border:none;border-radius:12px;padding:.65rem 1.8rem;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s">✅ কোড তৈরি করুন</button>
+      </div>
+
+      <!-- Promo list -->
+      <div id="promoList"></div>
+    </div>
+
     <div class="page" id="page-reviews">
       <div class="topbar">
         <h1>💬 মতামত ব্যবস্থাপনা</h1>
@@ -522,7 +562,7 @@ function logout(){
 }
 
 // ---- NAVIGATION ----
-var navIds = ['nav-orders','nav-analytics','nav-products','nav-sbproducts','nav-reviews','nav-settings'];
+var navIds = ['nav-orders','nav-analytics','nav-products','nav-sbproducts','nav-promo','nav-reviews','nav-settings'];
 function go(pageName, navId){
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   navIds.forEach(function(id){ 
@@ -1262,6 +1302,87 @@ function playSound(){
       o.start(c.currentTime+i*.15);o.stop(c.currentTime+i*.15+.3);
     });
   }catch(e){}
+}
+
+// ══════════════════════════════════════
+// PROMO CODES
+// ══════════════════════════════════════
+function getPromos(){
+  if(window._fbPromos) return window._fbPromos;
+  try{ return JSON.parse(localStorage.getItem('modhu_promos')||'[]'); }catch(e){ return []; }
+}
+function savePromos(arr){
+  window._fbPromos = arr;
+  localStorage.setItem('modhu_promos', JSON.stringify(arr));
+  if(window._firebaseReady && window._fbDB){
+    window._fbSet(window._fbRef(window._fbDB,'promos'), arr);
+  }
+}
+function createPromo(){
+  var code=(document.getElementById('promoCode').value||'').trim().toUpperCase();
+  var disc=parseInt(document.getElementById('promoDiscount').value||'0');
+  var minOrd=parseInt(document.getElementById('promoMinOrder').value||'0');
+  var maxDisc=parseInt(document.getElementById('promoMaxDiscount').value||'0');
+  var expiry=document.getElementById('promoExpiry').value||'';
+  var usageLimit=parseInt(document.getElementById('promoUsageLimit').value||'0');
+  if(!code){ toast('⚠️ কোড দিন!','#C0392B'); return; }
+  if(!disc||disc<1||disc>80){ toast('⚠️ ১–৮০% এর মধ্যে ডিসকাউন্ট দিন!','#C0392B'); return; }
+  var promos=getPromos();
+  if(promos.find(function(p){ return p.code===code; })){ toast('⚠️ এই কোড আগে থেকেই আছে!','#C0392B'); return; }
+  promos.push({code:code,discount:disc,minOrder:minOrd||0,maxDiscount:maxDisc||0,expiry:expiry||'',usageLimit:usageLimit||0,usedCount:0,active:true,created:new Date().toISOString()});
+  savePromos(promos);
+  ['promoCode','promoDiscount','promoMinOrder','promoMaxDiscount','promoExpiry','promoUsageLimit'].forEach(function(id){ document.getElementById(id).value=''; });
+  toast('✅ প্রোমো কোড তৈরি হয়েছে!','#2D5A27');
+  renderPromoPage();
+}
+function renderPromoPage(){
+  var promos=getPromos();
+  var el=document.getElementById('promoList');
+  if(!el) return;
+  if(!promos.length){
+    el.innerHTML='<div style="text-align:center;padding:2.5rem;color:#A0856A;background:white;border-radius:20px"><div style="font-size:3rem">🎟️</div><div style="font-weight:700;margin-top:.5rem">কোনো প্রোমো কোড নেই</div></div>';
+    return;
+  }
+  var html='';
+  for(var idx=0;idx<promos.length;idx++){
+    var p=promos[idx];
+    var expired=p.expiry&&new Date(p.expiry)<new Date();
+    var limitHit=p.usageLimit&&p.usedCount>=p.usageLimit;
+    var isActive=p.active&&!expired&&!limitHit;
+    var status=!p.active?'নিষ্ক্রিয়':(expired?'মেয়াদোত্তীর্ণ':(limitHit?'সীমা শেষ':'সক্রিয়'));
+    var borderColor=isActive?'var(--amber)':'#FFCDD2';
+    html+='<div style="background:white;border-radius:18px;padding:1.1rem 1.3rem;margin-bottom:.9rem;box-shadow:0 3px 16px rgba(59,31,10,.08);border-left:4px solid '+borderColor+'">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.7rem">';
+    html+='<div style="display:flex;align-items:center;gap:.7rem">';
+    html+='<span style="font-family:monospace;font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;padding:.25rem .8rem;border-radius:8px;letter-spacing:1px">'+p.code+'</span>';
+    var sBg=isActive?'#E8F5E9':'#FFEBEE'; var sColor=isActive?'#2D5A27':'#C0392B';
+    html+='<span style="background:'+sBg+';color:'+sColor+';font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:20px">'+status+'</span>';
+    html+='</div><div style="display:flex;gap:.5rem">';
+    var tBg=isActive?'#FFF3E0':'#E8F5E9'; var tColor=isActive?'#E65100':'#2D5A27'; var tLabel=p.active?'⏸ বন্ধ':'▶ চালু';
+    html+='<button onclick="togglePromo('+idx+')" style="background:'+tBg+';color:'+tColor+';border:none;border-radius:8px;padding:.3rem .7rem;font-family:sans-serif;font-size:.75rem;font-weight:700;cursor:pointer">'+tLabel+'</button> ';
+    html+='<button onclick="deletePromo('+idx+')" style="background:#FFEBEE;color:#C0392B;border:none;border-radius:8px;padding:.3rem .7rem;font-family:sans-serif;font-size:.75rem;font-weight:700;cursor:pointer">&#128465; &#2478;&#2497;&#2459;&#2497;&#2472;</button>';
+    html+='</div></div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:.5rem;font-size:.78rem">';
+    html+='<span style="background:#FFF8E1;color:#A85C0A;padding:.2rem .6rem;border-radius:8px;font-weight:700">💰 '+p.discount+'% ছাড়</span>';
+    if(p.minOrder) html+='<span style="background:#F3E5F5;color:#6A1B9A;padding:.2rem .6rem;border-radius:8px;font-weight:600">সর্বনিম্ন ৳'+p.minOrder+'</span>';
+    if(p.maxDiscount) html+='<span style="background:#E3F2FD;color:#1565C0;padding:.2rem .6rem;border-radius:8px;font-weight:600">সর্বোচ্চ ছাড় ৳'+p.maxDiscount+'</span>';
+    if(p.expiry) html+='<span style="background:#FCE4EC;color:#C2185B;padding:.2rem .6rem;border-radius:8px;font-weight:600">📅 '+p.expiry+'</span>';
+    var uLabel=p.usageLimit?(p.usedCount+'/'+p.usageLimit):p.usedCount;
+    html+='<span style="background:#E8F5E9;color:#2E7D32;padding:.2rem .6rem;border-radius:8px;font-weight:600">👥 '+uLabel+' বার</span>';
+    html+='</div></div>';
+  }
+  el.innerHTML=html;
+}
+function togglePromo(idx){
+  idx=parseInt(idx); var promos=getPromos(); promos[idx].active=!promos[idx].active;
+  savePromos(promos); renderPromoPage();
+  toast(promos[idx].active?'✅ প্রোমো চালু':'⏸ প্রোমো বন্ধ','#2D5A27');
+}
+function deletePromo(idx){
+  idx=parseInt(idx); var promos=getPromos();
+  if(!confirm('"'+promos[idx].code+'" মুছে ফেলবেন?')) return;
+  promos.splice(idx,1); savePromos(promos); renderPromoPage();
+  toast('🗑 মুছে ফেলা হয়েছে','#C0392B');
 }
 
 </script>

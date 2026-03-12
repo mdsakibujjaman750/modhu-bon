@@ -70,7 +70,7 @@ section{padding:4.5rem 4%}
 .prod-card:hover{transform:translateY(-7px);box-shadow:0 14px 38px rgba(59,31,10,.2)}
 .prod-badge{position:absolute;top:10px;left:10px;background:var(--amber-d);color:white;font-size:.65rem;font-weight:700;padding:.22rem .65rem;border-radius:20px;z-index:2}
 .prod-badge.sb{background:var(--green)}
-.prod-img{height:125px;display:flex;align-items:center;justify-content:center;font-size:5rem;overflow:hidden;transition:transform .3s}
+.prod-img{height:190px;overflow:hidden;transition:transform .3s;position:relative;border-radius:14px 14px 0 0}
 .prod-card:hover .prod-img{transform:scale(1.06)}
 .prod-body{padding:.95rem;flex:1;display:flex;flex-direction:column}
 .prod-body h3{font-size:.97rem;font-weight:700;color:var(--brown);margin-bottom:.28rem}
@@ -91,6 +91,7 @@ section{padding:4.5rem 4%}
 .sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
 .sb-card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:1.2rem;backdrop-filter:blur(8px);transition:all .3s;display:flex;flex-direction:column}
 .sb-card:hover{background:rgba(255,255,255,.18);transform:translateY(-5px)}
+.sb-img{height:130px;overflow:hidden;border-radius:14px 14px 0 0;margin:-1rem -1rem .8rem -1rem}
 .sb-card .icon{font-size:2.2rem;margin-bottom:.6rem}
 .sb-card h4{font-size:.95rem;font-weight:700;color:var(--amber-l);margin-bottom:.35rem}
 .sb-card p{font-size:.78rem;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:.8rem;flex:1}
@@ -349,6 +350,14 @@ footer{background:var(--brown);color:rgba(255,255,255,.75);padding:2.5rem 4% 1.5
 .order-modal .mbox{border-radius:24px;box-shadow:0 24px 80px rgba(59,31,10,.25)}
 .mh{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:white;border-radius:20px 20px 0 0;padding:1.1rem 1.4rem;display:flex;align-items:center;justify-content:space-between}
 .mh h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:white}
+
+/* ═══ PROMO CODE ANIMATION ═══ */
+.promo-success-anim{animation:promoPopIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes promoPopIn{0%{transform:scale(.7) translateY(8px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+.promo-confetti{position:absolute;pointer-events:none;font-size:1.2rem;animation:confettiFly 1.2s ease-out forwards}
+@keyframes confettiFly{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-80px) rotate(360deg);opacity:0}}
+#promoResult{transition:all .3s}
+#oPromoCode:focus{border-color:#9C27B0 !important;box-shadow:0 0 0 3px rgba(156,39,176,.15)}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -630,7 +639,17 @@ onValue(ref(db,'settings'), function(s){
       <textarea id="oAddress" placeholder="বাড়ি নং, রাস্তা, গ্রাম / মহল্লা..." rows="2"></textarea>
     </div>
 
-    <div class="fg"><label>বিশেষ নির্দেশনা</label><input type="text" id="oNote" placeholder="কোনো বার্তা থাকলে লিখুন..."/></div>
+    <input type="hidden" id="oNote" value=""/>
+    <!-- PROMO CODE -->
+    <div style="margin-bottom:.8rem">
+      <label style="font-size:.78rem;font-weight:700;color:#6A1B9A;display:block;margin-bottom:.3rem">🎟️ প্রোমো কোড <span style="opacity:.65;font-weight:500">(থাকলে দিন)</span></label>
+      <div style="display:flex;gap:.5rem">
+        <input type="text" id="oPromoCode" placeholder="যেমন: MODHU20" oninput="this.value=this.value.toUpperCase()" style="flex:1;border:2px solid #E1BEE7;border-radius:10px;padding:.5rem .8rem;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;outline:none;transition:border .2s;text-transform:uppercase"/>
+        <button onclick="applyPromo()" style="background:#7B1FA2;color:white;border:none;border-radius:10px;padding:.5rem 1rem;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s">প্রয়োগ</button>
+      </div>
+      <div id="promoResult" style="display:none;margin-top:.4rem;font-size:.8rem;border-radius:8px;padding:.4rem .7rem;font-weight:600"></div>
+    </div>
+    <div id="orderSummaryBox" style="display:none;background:linear-gradient(135deg,#F9F3E8,#FFF8E1);border-radius:12px;padding:.7rem 1rem;margin-bottom:.8rem;font-size:.82rem"></div>
     <button class="submit-btn" onclick="submitOrder()">🚀 অর্ডার নিশ্চিত করুন</button>
   </div>
 </div>
@@ -671,20 +690,17 @@ onValue(ref(db,'settings'), function(s){
 // DEFAULTS
 // ══════════════════════════════════════
 var DEFAULTS=[
+  {id:9,name:'খলিশা ফুলের মধু',desc:'সুন্দরবনের দুর্লভ খলিশা ফুল থেকে সংগৃহীত। ৬ পিস মধুর চাক সহ।',price:1200,icon:'🐝',badge:'সুন্দরবন বিশেষ',btype:'sb',cat:'special',bg:'#E8F5E9,#C8E6C9'},
   {id:1,name:'সরিষা ফুলের মধু',desc:'হলদে, সুগন্ধি। ঠান্ডায় জমে — বিশুদ্ধতার প্রমাণ।',price:550,icon:'🌼',badge:'জনপ্রিয়',btype:'',cat:'ful',bg:'#FFF8E1,#FFF3CD'},
   {id:2,name:'কালিজিরা ফুলের মধু',desc:'রোগ প্রতিরোধে অতুলনীয়। প্রতিদিন ১ চামচ।',price:650,icon:'🌿',badge:'সেরা বিক্রেতা',btype:'',cat:'ful',bg:'#F1F8E9,#DCEDC8'},
   {id:3,name:'লিচু ফুলের মধু',desc:'হালকা মিষ্টি ও সুগন্ধি। সোনালি রঙের বিশেষ মধু।',price:600,icon:'🍈',badge:'মৌসুমি',btype:'',cat:'special',bg:'#FCE4EC,#F8BBD0'},
-  {id:4,name:'সুন্দরবন প্রিমিয়াম',desc:'গাঢ় রঙ, শক্তিশালী স্বাদ। অ্যান্টিব্যাকটেরিয়াল।',price:850,icon:'🌳',badge:'সুন্দরবন',btype:'sb',cat:'sb',bg:'#E8F5E9,#C8E6C9'},
-  {id:5,name:'সূর্যমুখী ফুলের মধু',desc:'উজ্জ্বল সোনালি রঙ। ভিটামিন সমৃদ্ধ।',price:580,icon:'🌻',badge:'',btype:'',cat:'ful',bg:'#FFFDE7,#FFF9C4'},
-  {id:6,name:'মিশ্র ফুলের মধু',desc:'নানা ফুলের মিশ্রণ। সুষম পুষ্টিগুণ সম্পন্ন।',price:500,icon:'🌺',badge:'সাশ্রয়ী',btype:'',cat:'mixed',bg:'#FCE4EC,#F3E5F5'},
-  {id:7,name:'গেওয়া ফুলের মধু',desc:'সুন্দরবনের গেওয়া ফুল থেকে। হালকা রঙ।',price:750,icon:'🌾',badge:'সুন্দরবন',btype:'sb',cat:'sb',bg:'#E8F5E9,#C8E6C9'},
-  {id:8,name:'কমলা ফুলের মধু',desc:'কমলা বাগান থেকে সংগৃহীত। হজমশক্তিতে কার্যকর।',price:620,icon:'🍊',badge:'',btype:'',cat:'special',bg:'#FFF3E0,#FFE0B2'}
+  {id:5,name:'মিশ্র ফুলের মধু',desc:'নানা ফুলের মিশ্রণ। সুষম পুষ্টিগুণ সম্পন্ন।',price:500,icon:'🌺',badge:'সাশ্রয়ী',btype:'',cat:'mixed',bg:'#FCE4EC,#F3E5F5'},
+  {id:6,name:'বরই ফুলের মধু',desc:'শীতকালীন বরই ফুল থেকে সংগৃহীত। হালকা মিষ্টি ও সুগন্ধি।',price:600,icon:'🍇',badge:'নতুন',btype:'',cat:'special',bg:'#EDE7F6,#D1C4E9'},
+  {id:7,name:'প্রাকৃতিক চাকের মধু',desc:'মৌচাক থেকে সরাসরি সংগৃহীত। মোম সহ বিশুদ্ধ।',price:900,icon:'🍯',badge:'প্রিমিয়াম',btype:'',cat:'ful',bg:'#FFF8E1,#FFE082'}
 ];
 var SB_DEFAULTS=[
-  {id:'sb1',name:'সুন্দরবন প্রিমিয়াম',desc:'খাঁটি সুন্দরী ফুলের মধু। গাঢ় রঙ।',price:850,icon:'🍯'},
-  {id:'sb2',name:'গেওয়া ফুলের মধু',desc:'হালকা রঙ, মৃদু মিষ্টি গন্ধ।',price:750,icon:'🌿'},
-  {id:'sb3',name:'বাইন ফুলের মধু',desc:'বিরল প্রজাতির ফুল থেকে সংগৃহীত।',price:900,icon:'🌸'},
-  {id:'sb4',name:'সুন্দরবন গিফট প্যাক',desc:'৩ ধরনের মধু মিলিয়ে বিশেষ উপহার প্যাকেজ।',price:2100,icon:'🎁'}
+  {id:'sb1',name:'সুন্দরবন প্রিমিয়াম',desc:'খাঁটি সুন্দরী ফুলের মধু। গাঢ় রঙ, শক্তিশালী স্বাদ।',price:850,icon:'🍯'},
+  {id:'sb3',name:'সুন্দরবন গিফট প্যাক',desc:'৬ ধরনের মধু মিলিয়ে বিশেষ অফার প্যাকেজ। সুন্দরবনের সেরা মধুর সমাহার।',price:3500,icon:'🎁'}
 ];
 var DEFAULT_REVIEWS=[
   {name:'রাহেলা বেগম',loc:'ঢাকা',stars:5,text:'সুন্দরবনের মধু সত্যিই অসাধারণ! পরিবার খুব পছন্দ করেছে।',ts:0},
@@ -722,6 +738,19 @@ function getWS(key,fallback){
 // ══════════════════════════════════════
 // RENDER PRODUCTS
 // ══════════════════════════════════════
+var HONEY_IMGS={
+  '🌼':'https://image2url.com/r2/default/images/1773341254535-cead9965-5092-43f8-b25c-ca7522745a5b.jpg',
+  '🌿':'https://image2url.com/r2/default/images/1773341476138-6976713d-1e67-4224-aaa4-8708b433bbb9.png',
+  '🍈':'https://image2url.com/r2/default/images/1773341596633-66f14011-4ffc-4014-b551-bd4051b96343.jpg',
+  '🌳':'https://images.unsplash.com/photo-1471943038574-2d8a80c9a1f0?w=400&q=80',
+  '🌺':'https://images.unsplash.com/photo-1601063476271-a159c71ab0b3?w=400&q=80',
+  '🍯':'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
+  '🎁':'https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=400&q=80',
+  '🍇':'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
+  '🐝':'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80',
+  '_d':'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80'
+};
+function getHoneyImg(e){ return HONEY_IMGS[e]||HONEY_IMGS['_d']; }
 function renderProducts(filter){
   if(!filter)filter='all';
   var prods=getProducts();
@@ -734,7 +763,7 @@ function renderProducts(filter){
     var badge=p.badge?'<div class="prod-badge '+(p.btype||'')+'">'+p.badge+'</div>':'';
     html+='<div class="prod-card" style="animation-delay:'+(i*.07)+'s">'
       +badge
-      +'<div class="prod-img" style="background:linear-gradient(135deg,'+(p.bg||'#FFF8E1,#FFF3CD')+')">'+p.icon+'</div>'
+      +'<div class="prod-img"><img src="'+getHoneyImg(p.icon)+'" alt="'+p.name+'" style="width:100%;height:100%;object-fit:cover;display:block"/></div>'
       +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+p.desc+'</p>'
       +'<div class="prod-bottom">'
       +'<div class="prod-price">৳'+Number(p.price).toLocaleString()+' <span>/কেজি</span></div>'
@@ -751,7 +780,7 @@ function renderSB(){
   for(var i=0;i<prods.length;i++){
     var p=prods[i];
     html+='<div class="sb-card" style="animation-delay:'+(i*.08)+'s">'
-      +'<div class="icon">'+p.icon+'</div>'
+      +'<div class="sb-img"><img src="'+getHoneyImg(p.icon)+'" alt="'+p.name+'" style="width:100%;height:100%;object-fit:cover;display:block"/></div>'
       +'<h4>'+p.name+'</h4><p>'+p.desc+'</p>'
       +'<div class="sb-price">৳ '+Number(p.price).toLocaleString()+'</div>'
       +'<div class="sb-btns">'
@@ -1120,6 +1149,103 @@ function showOrdSuccess(){
   setTimeout(function(){ ov.classList.remove('show'); }, 3000);
 }
 
+
+// ══ PROMO CODE ══
+var _appliedPromo = null;
+
+function getShopPromos(){
+  if(window._fbPromos) return window._fbPromos;
+  try{ return JSON.parse(localStorage.getItem('modhu_promos')||'[]'); }catch(e){ return []; }
+}
+
+function applyPromo(){
+  var code=(document.getElementById('oPromoCode').value||'').trim().toUpperCase();
+  var res=document.getElementById('promoResult');
+  if(!code){ res.style.display='none'; _appliedPromo=null; updateOrderSummary(); return; }
+
+  var promos=getShopPromos();
+  var p=promos.find(function(x){ return x.code===code && x.active; });
+
+  if(!p){
+    res.style.display='block';
+    res.style.background='#FFEBEE'; res.style.color='#C0392B';
+    res.textContent='❌ কোডটি সঠিক নয় বা মেয়াদ শেষ';
+    _appliedPromo=null; updateOrderSummary(); return;
+  }
+  if(p.expiry && new Date(p.expiry)<new Date()){
+    res.style.display='block';
+    res.style.background='#FFEBEE'; res.style.color='#C0392B';
+    res.textContent='❌ এই কোডের মেয়াদ শেষ হয়ে গেছে';
+    _appliedPromo=null; updateOrderSummary(); return;
+  }
+  if(p.usageLimit && p.usedCount>=p.usageLimit){
+    res.style.display='block';
+    res.style.background='#FFEBEE'; res.style.color='#C0392B';
+    res.textContent='❌ এই কোডের ব্যবহারের সীমা শেষ';
+    _appliedPromo=null; updateOrderSummary(); return;
+  }
+
+  // Check min order
+  var baseAmt = calcBaseAmount();
+  if(p.minOrder && baseAmt < p.minOrder){
+    res.style.display='block';
+    res.style.background='#FFF3E0'; res.style.color='#E65100';
+    res.textContent='⚠️ এই কোড ব্যবহারে সর্বনিম্ন ৳'+p.minOrder+' কেনা লাগবে';
+    _appliedPromo=null; updateOrderSummary(); return;
+  }
+
+  _appliedPromo=p;
+  var discAmt=calcDiscountAmount(baseAmt,p);
+  res.style.display='block';
+  res.style.background='#E8F5E9'; res.style.color='#2D5A27';
+  res.className='promo-success-anim';
+  res.innerHTML='<span>🎉</span> কোড প্রয়োগ হয়েছে! <strong>৳'+discAmt+'</strong> ছাড় পাবেন';
+  // Confetti burst
+  var wrap=document.getElementById('promoResult');
+  var emojis=['🍯','✨','🎊','💛','🌟'];
+  for(var ci=0;ci<6;ci++){
+    (function(i){setTimeout(function(){
+      var el=document.createElement('span');
+      el.textContent=emojis[i%emojis.length];
+      el.className='promo-confetti';
+      el.style.cssText='position:absolute;left:'+(30+i*12)+'%;top:0;font-size:1rem;z-index:999;pointer-events:none;animation:confettiFly 1s ease-out forwards';
+      if(wrap&&wrap.parentNode){wrap.parentNode.style.position='relative'; wrap.parentNode.appendChild(el); setTimeout(function(){el.remove();},1100);}
+    },i*80);})(ci);
+  }
+  updateOrderSummary();
+}
+
+function calcBaseAmount(){
+  if(!currentOrder) return 0;
+  if(currentOrder.isCart && currentOrder.cartItems){
+    return currentOrder.cartItems.reduce(function(s,i){ return s+i.price*i.qty; },0);
+  }
+  var qty=document.getElementById('oQty')?document.getElementById('oQty').value:'1kg';
+  var base=currentOrder.price||0;
+  return base;
+}
+
+function calcDiscountAmount(base, promo){
+  var disc=Math.round(base * promo.discount / 100);
+  if(promo.maxDiscount && disc>promo.maxDiscount) disc=promo.maxDiscount;
+  return disc;
+}
+
+function updateOrderSummary(){
+  var box=document.getElementById('orderSummaryBox');
+  if(!currentOrder||!_appliedPromo){ box.style.display='none'; return; }
+  var base=calcBaseAmount();
+  var disc=calcDiscountAmount(base,_appliedPromo);
+  var isSS=(document.getElementById('oDistrict')||{value:''}).value==='সাতক্ষীরা'
+         &&(document.getElementById('oUpazila')||{value:''}).value==='সাতক্ষীরা সদর';
+  var del=isSS?60:120;
+  var final=base-disc+del;
+  box.style.display='block';
+  box.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span>পণ্য মূল্য</span><span>৳'+base+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:.3rem;color:#C0392B"><span>🎟️ ছাড় ('+_appliedPromo.code+')</span><span>−৳'+disc+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span>ডেলিভারি</span><span>৳'+del+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;font-weight:800;font-size:.9rem;border-top:1.5px dashed #E8D5B0;padding-top:.4rem;margin-top:.3rem"><span>মোট</span><span style="color:var(--amber-d)">৳'+final+'</span></div>';
+}
 function submitOrder(){
   var name=document.getElementById('oName').value.trim();
   var phone=document.getElementById('oPhone').value.trim().replace(/\s/g,'');
@@ -1149,15 +1275,20 @@ function submitOrder(){
   if(currentOrder&&currentOrder.isCart&&currentOrder.cartItems){
     for(var i=0;i<currentOrder.cartItems.length;i++){
       var item=currentOrder.cartItems[i];
-      var tot=(item.price*item.qty)+deliveryCharge;
+      var itemBase=(item.price*item.qty);
+      var itemDisc=_appliedPromo?Math.round(itemBase*_appliedPromo.discount/100):0;
+      if(_appliedPromo&&_appliedPromo.maxDiscount&&itemDisc>_appliedPromo.maxDiscount) itemDisc=_appliedPromo.maxDiscount;
+      var tot=itemBase-itemDisc+deliveryCharge;
       newOrders.push({product:item.name,icon:item.icon,price:tot,unitPrice:item.price,qty:item.qty+'কেজি',deliveryCharge:deliveryCharge,trxId:trxId,payMode:payMode,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
     }
     cart=[];updateBadge();
   } else if(currentOrder){
     var qty=document.getElementById('oQty').value;
     var base=Number(currentOrder.price)||0;
-    var tot=base+deliveryCharge;
-    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:tot,unitPrice:base,qty:qty,deliveryCharge:deliveryCharge,trxId:trxId,payMode:payMode,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
+    var discAmt2=_appliedPromo?Math.round(base*_appliedPromo.discount/100):0;
+    if(_appliedPromo&&_appliedPromo.maxDiscount&&discAmt2>_appliedPromo.maxDiscount) discAmt2=_appliedPromo.maxDiscount;
+    var tot=base-discAmt2+deliveryCharge;
+    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:tot,unitPrice:base,qty:qty,deliveryCharge:deliveryCharge,discount:discAmt2||0,promoCode:_appliedPromo?_appliedPromo.code:'',trxId:trxId,payMode:payMode,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
   }
   if(window._firebaseReady && window._fbDB){
     var ordersRef=window._fbRef(window._fbDB,'orders');
@@ -1168,6 +1299,13 @@ function submitOrder(){
     localStorage.setItem('modhu_orders',JSON.stringify(ords));
   }
   closeOrder();
+  // Increment promo usage
+  if(_appliedPromo){
+    var promos=getShopPromos();
+    var pi=promos.findIndex(function(x){ return x.code===_appliedPromo.code; });
+    if(pi>=0){ promos[pi].usedCount=(promos[pi].usedCount||0)+1; localStorage.setItem('modhu_promos',JSON.stringify(promos)); if(window._firebaseReady&&window._fbDB){ window._fbSet(window._fbRef(window._fbDB,'promos'),promos); } }
+    _appliedPromo=null;
+  }
   showOrdSuccess();
   // Reset form
   ['oName','oPhone','oAddress','oNote','oTrxId'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
@@ -1179,6 +1317,10 @@ function submitOrder(){
   // Reset to COD
   document.getElementById('oPayment').value='বিকাশ (ডেলিভারি)';
   document.getElementById('oPayMode').value='cod';
+  _appliedPromo=null;
+  var pr=document.getElementById('promoResult'); if(pr){pr.style.display='none';}
+  var ob=document.getElementById('orderSummaryBox'); if(ob){ob.style.display='none';}
+  var pc=document.getElementById('oPromoCode'); if(pc) pc.value='';
   var cb2=document.getElementById('codBox'); if(cb2) cb2.style.display='block';
   var fb2=document.getElementById('fullPayBox'); if(fb2) fb2.style.display='none';
   document.querySelectorAll('.pay-tog-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});
@@ -1211,7 +1353,10 @@ function openTracking(){
   document.getElementById('trackPhone').value='';
   setTimeout(function(){document.getElementById('trackPhone').focus();},300);
 }
-function closeTracking(){ document.getElementById('trackModal').classList.remove('open'); }
+function closeTracking(){
+  document.getElementById('trackModal').classList.remove('open');
+  if(window._trackUnsub){ window._trackUnsub(); window._trackUnsub=null; }
+}
 
 var STATUS_STEPS = [
   {key:'নতুন অর্ডার', icon:'📥', label:'অর্ডার গ্রহণ', desc:'আপনার অর্ডার আমরা পেয়েছি'},
@@ -1230,15 +1375,18 @@ function doTrack(){
   res.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--brown-l)">⏳ খুঁজছি...</div>';
 
   if(window._firebaseReady && window._fbDB){
-    window._fbGet(window._fbRef(window._fbDB,'orders')).then(function(snap){
+    // Real-time listener — admin status update হলে auto change হবে
+    if(window._trackUnsub) window._trackUnsub(); // পুরনো listener বন্ধ করো
+    window._trackPhone = phone;
+    window._trackUnsub = window._fbOnValue(window._fbRef(window._fbDB,'orders'), function(snap){
       var orders=[];
       if(snap.exists()){
         var d=snap.val();
         var arr=Array.isArray(d)?d:Object.values(d);
-        orders=arr.filter(function(o){return o&&o.phone===phone;});
+        orders=arr.filter(function(o){return o&&o.phone===window._trackPhone;});
       }
       renderTrackResult(orders);
-    }).catch(function(){ renderTrackResult([]); });
+    });
   } else {
     try{
       var all=JSON.parse(localStorage.getItem('modhu_orders')||'[]');
