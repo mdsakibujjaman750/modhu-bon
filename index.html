@@ -497,22 +497,10 @@ onValue(ref(db,'settings'), function(s){
       </div>
     </div>
 
-    <div class="fg" id="qtyBox" style="margin-bottom:.7rem">
-      <label>পরিমাণ</label>
-      <select id="oQty">
-        <option value="500g">৫০০ গ্রাম</option>
-        <option value="1kg" selected>১ কেজি</option>
-        <option value="2kg">২ কেজি</option>
-        <option value="5kg">৫ কেজি</option>
-      </select>
-    </div>
+    <input type="hidden" id="oQty" value="1kg"/>
 
     <div class="fg" style="margin-bottom:.4rem">
       <label>পেমেন্ট পদ্ধতি ★</label>
-      <div class="pay-toggle-row">
-        <button class="pay-tog-btn active" id="btnCOD" onclick="selMainPay('cod',this)">💵 ক্যাশ অন ডেলিভারি</button>
-        <button class="pay-tog-btn" id="btnOnline" onclick="selMainPay('online',this)">📲 অনলাইন পেমেন্ট</button>
-      </div>
       <input type="hidden" id="oPayment" value="ক্যাশ অন ডেলিভারি"/>
       <input type="hidden" id="oPayMode" value="cod"/>
     </div>
@@ -547,28 +535,6 @@ onValue(ref(db,'settings'), function(s){
         <div id="codChargeInfo" style="display:none;background:white;border-radius:8px;padding:.4rem .7rem;font-size:.8rem;font-weight:700;color:#D4821A;text-align:center;margin-bottom:.4rem"></div>
         <label style="font-size:.76rem;font-weight:700;color:#A85C0A;display:block;margin-bottom:.28rem">TrxID / ট্রানজেকশন নম্বর ★</label>
         <input type="text" id="oTrxId" placeholder="যেমন: 8GH2KL9M" style="width:100%;border:2px solid #F5C842;border-radius:8px;padding:.42rem .7rem;font-family:'Hind Siliguri',sans-serif;font-size:.86rem;outline:none;transition:border .2s"/>
-        
-      </div>
-    </div>
-
-    <!-- Full payment box -->
-    <div id="fullPayBox" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:.7rem">
-      <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border:2px solid #A5D6A7;border-radius:14px;padding:.8rem 1rem">
-        <div style="font-size:.8rem;font-weight:700;color:#2D5A27;margin-bottom:.5rem">💳 সম্পূর্ণ পেমেন্ট (পণ্য + ডেলিভারি)</div>
-        <!-- Full online method buttons -->
-        <div class="pay-toggle-row" style="margin:0 0 .5rem">
-          <button class="pay-sub-btn active" onclick="selSubPay('বিকাশ (ফুল)',this,'full')"><span class="pay-icon bkash-icon" style="font-size:.65rem;font-weight:900;letter-spacing:-.5px">bKash</span>বিকাশ</button>
-          <button class="pay-sub-btn" onclick="selSubPay('নগদ (ফুল)',this,'full')"><span class="pay-icon nagad-icon" style="font-size:.65rem;font-weight:900">নগদ</span>নগদ</button>
-          <button class="pay-sub-btn" onclick="selSubPay('রকেট (ফুল)',this,'full')"><span class="pay-icon rocket-icon" style="font-size:.7rem;font-weight:900">🚀</span>রকেট</button>
-        </div>
-        <!-- Number + copy -->
-        <div style="display:flex;align-items:center;gap:.6rem;background:white;border-radius:10px;padding:.5rem .8rem;margin-bottom:.4rem">
-          <span style="font-size:.95rem;font-weight:700;color:#1A3A15;flex:1">📱 01747401484</span>
-          <button onclick="copyNum('copyBtnFull')" id="copyBtnFull" style="background:#2D5A27;color:white;border:none;border-radius:6px;padding:.2rem .55rem;font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.3px">Copy</button>
-        </div>
-        <div id="fullTotalInfo" style="display:none;background:white;border-radius:8px;padding:.4rem .7rem;font-size:.8rem;font-weight:700;color:#2D5A27;text-align:center;margin-bottom:.4rem"></div>
-        <label style="font-size:.76rem;font-weight:700;color:#2D5A27;display:block;margin-bottom:.28rem">TrxID / ট্রানজেকশন নম্বর ★</label>
-        <input type="text" id="oTrxIdFull" placeholder="যেমন: 8GH2KL9M" style="width:100%;border:2px solid #A5D6A7;border-radius:8px;padding:.42rem .7rem;font-family:'Hind Siliguri',sans-serif;font-size:.86rem;outline:none;transition:border .2s"/>
         
       </div>
     </div>
@@ -879,7 +845,7 @@ function openOrderSingle(id,name,price,icon){
   document.getElementById('spName').textContent=name;
   document.getElementById('spPrice').textContent='৳'+Number(price).toLocaleString()+' / কেজি';
   document.getElementById('cartSummaryBox').innerHTML='';
-  document.getElementById('qtyBox').style.display='flex';
+  var qb=document.getElementById('qtyBox'); if(qb) qb.style.display='flex';
   document.getElementById('orderModal').classList.add('open');
 }
 function checkoutCart(){
@@ -893,7 +859,7 @@ function checkoutCart(){
   for(var i=0;i<cart.length;i++)sumHtml+='<div class="cart-summary-item"><span>'+cart[i].icon+' '+cart[i].name+' ×'+cart[i].qty+'</span><span>৳'+(cart[i].qty*cart[i].price).toLocaleString()+'</span></div>';
   sumHtml+='<div class="cart-summary-total"><span>মোট:</span><span>৳'+tot.toLocaleString()+'</span></div></div>';
   document.getElementById('cartSummaryBox').innerHTML=sumHtml;
-  document.getElementById('qtyBox').style.display='none';
+  var qb2=document.getElementById('qtyBox'); if(qb2) qb2.style.display='none';
   closeCart();document.getElementById('orderModal').classList.add('open');
 }
 function closeOrder(){document.getElementById('orderModal').classList.remove('open');}
@@ -1025,8 +991,10 @@ function selMainPay(mode, btn){
   if(mode === 'cod'){
     codBox.style.display = 'block';
     fullBox.style.display = 'none';
-    // default payment = বিকাশ (ডেলিভারি)
-    document.getElementById('oPayment').value = 'বিকাশ (ডেলিভারি)';
+    // No sub selected yet = pure COD
+    document.getElementById('oPayment').value = 'ক্যাশ অন ডেলিভারি';
+    // Reset sub buttons
+    document.querySelectorAll('#codBox .pay-sub-btn').forEach(function(b){ b.classList.remove('active'); });
   } else {
     codBox.style.display = 'none';
     fullBox.style.display = 'block';
@@ -1040,6 +1008,12 @@ function selSubPay(method, btn, boxType){
   var parent = btn.closest('.pay-toggle-row') || btn.parentElement;
   parent.querySelectorAll('.pay-sub-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
+  // Highlight TrxID input to signal it's now required
+  var trxEl = boxType==='full' ? document.getElementById('oTrxIdFull') : document.getElementById('oTrxId');
+  if(trxEl){
+    trxEl.style.borderColor='#F5C842';
+    trxEl.focus();
+  }
 }
 
 function copyNum(btnId){
@@ -1078,19 +1052,29 @@ function showOrdSuccess(){
 function submitOrder(){
   var name=document.getElementById('oName').value.trim();
   var phone=document.getElementById('oPhone').value.trim().replace(/\s/g,'');
-  var district=document.getElementById('oDistrict')?document.getElementById('oDistrict').value:'';
-  var upazila=document.getElementById('oUpazila')?document.getElementById('oUpazila').value:'';
+  var district=(document.getElementById('oDistrict')||{value:''}).value;
+  var upazila=(document.getElementById('oUpazila')||{value:''}).value;
   var addrBase=document.getElementById('oAddress').value.trim();
-  var address=[addrBase,upazila,district,'বাংলাদেশ'].filter(Boolean).join(', ');
   var payment=document.getElementById('oPayment').value;
   var payMode=(document.getElementById('oPayMode')||{value:'cod'}).value;
+
+  // ══ Validate all required fields ══
+  if(!name){ showToast('⚠️ নাম দিন!','#C0392B'); return; }
+  if(!phone||!/^01[3-9]\d{8}$/.test(phone)){ showToast('⚠️ সঠিক মোবাইল নম্বর দিন!','#C0392B'); return; }
+  if(!district){ showToast('⚠️ জেলা বেছে নিন!','#C0392B'); return; }
+  if(!upazila){ showToast('⚠️ উপজেলা বেছে নিন!','#C0392B'); return; }
+  if(!addrBase){ showToast('⚠️ সম্পূর্ণ ঠিকানা দিন!','#C0392B'); return; }
+
+  // ══ TrxID — সব ক্ষেত্রে লাগবে (pure COD ছাড়া) ══
   var trxId='';
-  var trxField = payMode==='full' ? 'oTrxIdFull' : 'oTrxId';
-  trxId=(document.getElementById(trxField)||{value:''}).value.trim();
-  if(!trxId){showToast('⚠️ TrxID / ট্রানজেকশন নম্বর দিন!','#C0392B');return;}
-  if(!name||!phone){showToast('⚠️ নাম ও মোবাইল নম্বর আবশ্যক!','#C0392B');return;}
-  if(!/^01[3-9]\d{8}$/.test(phone)){showToast('⚠️ সঠিক মোবাইল নম্বর দিন!','#C0392B');return;}
-  if(!district&&!addrBase){showToast('⚠️ ডেলিভারি ঠিকানা দিন!','#C0392B');return;}
+  var isPureCOD = (payMode==='cod' && payment==='ক্যাশ অন ডেলিভারি');
+  if(!isPureCOD){
+    var trxField = payMode==='full' ? 'oTrxIdFull' : 'oTrxId';
+    trxId=(document.getElementById(trxField)||{value:''}).value.trim();
+    if(!trxId){ showToast('⚠️ TrxID / ট্রানজেকশন নম্বর দিন!','#C0392B'); return; }
+  }
+
+  var address=[addrBase,upazila,district,'বাংলাদেশ'].filter(Boolean).join(', ');
   var isSatkhiraSadar2=(district==='সাতক্ষীরা'&&upazila==='সাতক্ষীরা সদর');
   var deliveryCharge=isSatkhiraSadar2?60:120;
   var note=document.getElementById('oNote').value.trim();
@@ -1100,14 +1084,14 @@ function submitOrder(){
     for(var i=0;i<currentOrder.cartItems.length;i++){
       var item=currentOrder.cartItems[i];
       var tot=(item.price*item.qty)+deliveryCharge;
-      newOrders.push({product:item.name,icon:item.icon,price:tot,unitPrice:item.price,qty:item.qty+'কেজি',deliveryCharge:deliveryCharge,trxId:trxId,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
+      newOrders.push({product:item.name,icon:item.icon,price:tot,unitPrice:item.price,qty:item.qty+'কেজি',deliveryCharge:deliveryCharge,trxId:trxId,payMode:payMode,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
     }
     cart=[];updateBadge();
   } else if(currentOrder){
     var qty=document.getElementById('oQty').value;
     var base=Number(currentOrder.price)||0;
     var tot=base+deliveryCharge;
-    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:tot,unitPrice:base,qty:qty,deliveryCharge:deliveryCharge,trxId:trxId,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
+    newOrders.push({product:currentOrder.name,icon:currentOrder.icon,price:tot,unitPrice:base,qty:qty,deliveryCharge:deliveryCharge,trxId:trxId,payMode:payMode,name:name,phone:phone,address:address,payment:payment,note:note,time:new Date().toLocaleString('bn-BD'),created_at:ts,status:'নতুন অর্ডার'});
   }
   if(window._firebaseReady && window._fbDB){
     var ordersRef=window._fbRef(window._fbDB,'orders');
@@ -1120,17 +1104,17 @@ function submitOrder(){
   closeOrder();
   showOrdSuccess();
   // Reset form
-  ['oName','oPhone','oAddress','oNote','oTrxId','oTrxIdFull'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['oName','oPhone','oAddress','oNote','oTrxId'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var od=document.getElementById('oDistrict'); if(od) od.value='';
   var ou=document.getElementById('oUpazila'); if(ou){ou.innerHTML='<option value="">— আগে জেলা বেছে নিন —</option>';}
   var pe=document.getElementById('phoneErr'); if(pe) pe.style.display='none';
   var ci=document.getElementById('codChargeInfo'); if(ci) ci.style.display='none';
   var fi=document.getElementById('fullTotalInfo'); if(fi) fi.style.display='none';
   // Reset to COD
-  document.getElementById('oPayment').value='বিকাশ (ডেলিভারি)';
+  document.getElementById('oPayment').value='ক্যাশ অন ডেলিভারি';
   document.getElementById('oPayMode').value='cod';
-  document.getElementById('codBox').style.display='block';
-  document.getElementById('fullPayBox').style.display='none';
+  var cb2=document.getElementById('codBox'); if(cb2) cb2.style.display='block';
+  var fb2=document.getElementById('fullPayBox'); if(fb2) fb2.style.display='none';
   document.querySelectorAll('.pay-tog-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});
   document.querySelectorAll('#codBox .pay-sub-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});
   document.querySelectorAll('#fullPayBox .pay-sub-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});

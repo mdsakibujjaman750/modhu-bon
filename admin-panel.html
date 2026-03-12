@@ -399,7 +399,10 @@ setTimeout(function(){
     </div>
 
     <div class="page" id="page-payment">
-      <div class="topbar"><h1>💳 Payment চেক</h1></div>
+      <div class="topbar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <h1>💳 Payment চেক</h1>
+        <button onclick="clearPayHistory()" style="background:#C0392B;color:white;border:none;border-radius:10px;padding:.4rem 1rem;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">🗑️ History মুছুন</button>
+      </div>
       <!-- Summary cards -->
       <div id="pay-summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.2rem"></div>
       <!-- Filter bar -->
@@ -786,6 +789,7 @@ function openDet(btn){
   html += '<div class="pay-section-title">💳 পেমেন্ট তথ্য</div>';
   if(isFullPay || isDelPay){
     var method = (o.payment||'').replace('(ফুল)','').replace('(ডেলিভারি)','').trim();
+    if(!method || method==='ক্যাশ অন ডেলিভারি') method='ক্যাশ অন ডেলিভারি';
     html += '<div class="pay-detail-row"><span>পেমেন্ট মাধ্যম</span><span style="font-weight:700">' + method + '</span></div>';
     if(isFullPay){
       html += '<div class="pay-detail-row"><span>পণ্যের মূল্য</span><span>৳' + base.toLocaleString() + '</span></div>';
@@ -1072,23 +1076,44 @@ function filterPayPage(type, btn){
   }
   var q = (document.getElementById('pay-search')||{value:''}).value.toLowerCase();
   var orders = getOrders();
-  var filtered = orders.filter(function(o){
-    var p = o.payment||'';
+
+  // Group cart orders: same phone + same created_at minute
+  var groups = [];
+  var seen = {};
+  orders.forEach(function(o){
+    var minKey = (o.phone||'') + '|' + (o.created_at||o.time||'').substring(0,16);
+    if(seen[minKey]){
+      seen[minKey].items.push(o);
+      seen[minKey].totalPrice += Number(o.price||0);
+    } else {
+      var g = {items:[o], phone:o.phone, name:o.name, payment:o.payment, trxId:o.trxId,
+               deliveryCharge:o.deliveryCharge, time:o.time, created_at:o.created_at,
+               totalPrice:Number(o.price||0), status:o.status};
+      seen[minKey] = g;
+      groups.push(g);
+    }
+  });
+
+  var filtered = groups.filter(function(g){
+    var p = g.payment||'';
     var isFull = p.indexOf('(ফুল)')>-1;
     var isDel = p.indexOf('(ডেলিভারি)')>-1;
     var isCod = !isFull && !isDel;
     if(_payFilter==='full' && !isFull) return false;
     if(_payFilter==='del' && !isDel) return false;
     if(_payFilter==='cod' && !isCod) return false;
-    if(_payFilter==='trx' && !o.trxId) return false;
-    if(q && !((o.name||'').toLowerCase().includes(q)) && !((o.trxId||'').toLowerCase().includes(q)) && !((o.phone||'').includes(q))) return false;
+    if(_payFilter==='trx' && !g.trxId) return false;
+    if(q && !((g.name||'').toLowerCase().includes(q)) && !((g.trxId||'').toLowerCase().includes(q)) && !((g.phone||'').includes(q))) return false;
     return true;
   });
+
   var html = '';
   if(!filtered.length){
     html = '<div class="pay-empty">📭 কোনো পেমেন্ট তথ্য নেই</div>';
   } else {
     filtered.forEach(function(o){
+      // Use group as "o" — items array for cart
+      o.price = o.totalPrice;
       var p = o.payment||'';
       var isFull = p.indexOf('(ফুল)')>-1;
       var isDel = p.indexOf('(ডেলিভারি)')>-1;
@@ -1122,6 +1147,23 @@ function filterPayPage(type, btn){
       html += '<div class="pay-card-row">🕐 সময়: <span>'+(o.time||'').substring(0,16)+'</span></div>';
       html += '<div class="pay-card-row">📦 স্ট্যাটাস: <span>'+o.status+'</span></div>';
       html += '</div>';
+      // Cart items list
+      if(o.items && o.items.length > 1){
+        html += '<div style="background:#FFFDE7;border-radius:8px;padding:.4rem .7rem;margin-top:.45rem;font-size:.78rem">';
+        html += '<div style="font-weight:700;color:#A85C0A;margin-bottom:.25rem">🛒 কার্ট ('+o.items.length+'টি পণ্য)</div>';
+        o.items.forEach(function(item){
+          html += '<div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:1px solid #FFF9C4">';
+          html += '<span>'+(item.icon||'🍯')+' '+item.product+' × '+(item.qty||'')+' </span>';
+          html += '<span style="font-weight:700">৳'+Number(item.price||0).toLocaleString()+'</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="pay-card-rows" style="margin-top:.3rem">';
+        html += '<div class="pay-card-row">🍯 পণ্য: <span>'+(o.items[0].icon||'')+(o.items[0].product||'')+'</span></div>';
+        html += '<div class="pay-card-row">📦 পরিমাণ: <span>'+(o.items[0].qty||'')+'</span></div>';
+        html += '</div>';
+      }
       if(o.trxId){
         html += '<div class="trx-display">';
         html += '<span style="font-size:.72rem;color:#6A1B9A;font-weight:700">🔑 TrxID</span>';
@@ -1133,6 +1175,35 @@ function filterPayPage(type, btn){
     });
   }
   document.getElementById('pay-list-wrap').innerHTML = html;
+}
+
+function clearPayHistory(){
+  showConfirmPop(
+    '🗑️ History মুছবেন?',
+    'TrxID সহ সব Payment history মুছে ফেলা হবে।<br/>এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।',
+    function(){
+      var orders = getOrders();
+      if(window._firebaseReady && window._fbDB){
+        var toDelete = orders.filter(function(o){ return o.trxId; });
+        toDelete.forEach(function(o){
+          if(o._key) window._fbRemove(window._fbRef(window._fbDB,'orders/'+o._key));
+        });
+      }
+      toast('✅ Payment history মুছে ফেলা হয়েছে', '#2D5A27');
+      renderPaymentPage();
+    }
+  );
+}
+
+function showConfirmPop(title, msg, onYes){
+  var ov = document.getElementById('confirmPop');
+  document.getElementById('confirmTitle').innerHTML = title;
+  document.getElementById('confirmMsg').innerHTML = msg;
+  document.getElementById('confirmYes').onclick = function(){ hideConfirmPop(); onYes(); };
+  ov.classList.add('show');
+}
+function hideConfirmPop(){
+  document.getElementById('confirmPop').classList.remove('show');
 }
 
 function cpTrx(btn){
@@ -1338,5 +1409,21 @@ function playSound(){
 }
 
 </script>
+
+<!-- Confirm Popup -->
+<div id="confirmPop" style="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s">
+  <div style="background:white;border-radius:20px;padding:1.8rem 1.6rem;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);transform:scale(.85);transition:transform .35s cubic-bezier(.34,1.56,.64,1)">
+    <div id="confirmTitle" style="font-size:1.1rem;font-weight:700;color:#C0392B;margin-bottom:.6rem"></div>
+    <div id="confirmMsg" style="font-size:.85rem;color:#5A3A1A;line-height:1.6;margin-bottom:1.3rem"></div>
+    <div style="display:flex;gap:.7rem;justify-content:center">
+      <button onclick="hideConfirmPop()" style="flex:1;background:#F5F5F5;color:#555;border:none;border-radius:12px;padding:.65rem;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer">বাতিল</button>
+      <button id="confirmYes" style="flex:1;background:#C0392B;color:white;border:none;border-radius:12px;padding:.65rem;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">হ্যাঁ, মুছুন</button>
+    </div>
+  </div>
+</div>
+<style>
+#confirmPop.show{opacity:1 !important;pointer-events:all !important}
+#confirmPop.show > div{transform:scale(1) !important}
+</style>
 </body>
 </html>
