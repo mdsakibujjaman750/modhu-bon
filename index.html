@@ -70,7 +70,7 @@ section{padding:4.5rem 4%}
 .prod-card:hover{transform:translateY(-7px);box-shadow:0 14px 38px rgba(59,31,10,.2)}
 .prod-badge{position:absolute;top:10px;left:10px;background:var(--amber-d);color:white;font-size:.65rem;font-weight:700;padding:.22rem .65rem;border-radius:20px;z-index:2}
 .prod-badge.sb{background:var(--green)}
-.prod-img{height:190px;overflow:hidden;transition:transform .3s;position:relative;border-radius:14px 14px 0 0}
+.prod-img{height:220px;overflow:hidden;transition:transform .3s;position:relative;border-radius:14px 14px 0 0}
 .prod-card:hover .prod-img{transform:scale(1.06)}
 .prod-body{padding:.95rem;flex:1;display:flex;flex-direction:column}
 .prod-body h3{font-size:.97rem;font-weight:700;color:var(--brown);margin-bottom:.28rem}
@@ -91,7 +91,7 @@ section{padding:4.5rem 4%}
 .sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
 .sb-card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:1.2rem;backdrop-filter:blur(8px);transition:all .3s;display:flex;flex-direction:column}
 .sb-card:hover{background:rgba(255,255,255,.18);transform:translateY(-5px)}
-.sb-img{height:130px;overflow:hidden;border-radius:14px 14px 0 0;margin:-1rem -1rem .8rem -1rem}
+.sb-img{height:150px;overflow:hidden;border-radius:14px 14px 0 0;margin:-1rem -1rem .8rem -1rem}
 .sb-card .icon{font-size:2.2rem;margin-bottom:.6rem}
 .sb-card h4{font-size:.95rem;font-weight:700;color:var(--amber-l);margin-bottom:.35rem}
 .sb-card p{font-size:.78rem;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:.8rem;flex:1}
@@ -390,13 +390,24 @@ function applyFB(){
   renderReviews();
 }
 
-// Real-time listeners - fires immediately on load AND on every change
+// ══ FORCE RESET Firebase products on every load ══
+remove(ref(db,'products')).then(function(){ return set(ref(db,'products'), DEFAULTS); });
+remove(ref(db,'sbproducts')).then(function(){ return set(ref(db,'sbproducts'), SB_DEFAULTS); });
+window._fbProducts = DEFAULTS;
+window._fbSBProducts = SB_DEFAULTS;
+
 onValue(ref(db,'products'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbProducts = Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){
+    var d=s.val();
+    window._fbProducts = Array.isArray(d)?d:Object.values(d).filter(Boolean);
+  } else { window._fbProducts = DEFAULTS; }
   applyFB();
 });
 onValue(ref(db,'sbproducts'), function(s){
-  if(s.exists()){ var d=s.val(); window._fbSBProducts = Array.isArray(d)?d:Object.values(d); }
+  if(s.exists()){
+    var d=s.val();
+    window._fbSBProducts = Array.isArray(d)?d:Object.values(d).filter(Boolean);
+  } else { window._fbSBProducts = SB_DEFAULTS; }
   applyFB();
 });
 onValue(ref(db,'reviews'), function(s){
@@ -690,17 +701,17 @@ onValue(ref(db,'settings'), function(s){
 // DEFAULTS
 // ══════════════════════════════════════
 var DEFAULTS=[
-  {id:9,name:'খলিশা ফুলের মধু',desc:'সুন্দরবনের দুর্লভ খলিশা ফুল থেকে সংগৃহীত। ৬ পিস মধুর চাক সহ।',price:1200,icon:'🐝',badge:'সুন্দরবন বিশেষ',btype:'sb',cat:'special',bg:'#E8F5E9,#C8E6C9'},
   {id:1,name:'সরিষা ফুলের মধু',desc:'হলদে, সুগন্ধি। ঠান্ডায় জমে — বিশুদ্ধতার প্রমাণ।',price:550,icon:'🌼',badge:'জনপ্রিয়',btype:'',cat:'ful',bg:'#FFF8E1,#FFF3CD'},
   {id:2,name:'কালিজিরা ফুলের মধু',desc:'রোগ প্রতিরোধে অতুলনীয়। প্রতিদিন ১ চামচ।',price:650,icon:'🌿',badge:'সেরা বিক্রেতা',btype:'',cat:'ful',bg:'#F1F8E9,#DCEDC8'},
   {id:3,name:'লিচু ফুলের মধু',desc:'হালকা মিষ্টি ও সুগন্ধি। সোনালি রঙের বিশেষ মধু।',price:600,icon:'🍈',badge:'মৌসুমি',btype:'',cat:'special',bg:'#FCE4EC,#F8BBD0'},
-  {id:5,name:'মিশ্র ফুলের মধু',desc:'নানা ফুলের মিশ্রণ। সুষম পুষ্টিগুণ সম্পন্ন।',price:500,icon:'🌺',badge:'সাশ্রয়ী',btype:'',cat:'mixed',bg:'#FCE4EC,#F3E5F5'},
-  {id:6,name:'বরই ফুলের মধু',desc:'শীতকালীন বরই ফুল থেকে সংগৃহীত। হালকা মিষ্টি ও সুগন্ধি।',price:600,icon:'🍇',badge:'নতুন',btype:'',cat:'special',bg:'#EDE7F6,#D1C4E9'},
-  {id:7,name:'প্রাকৃতিক চাকের মধু',desc:'মৌচাক থেকে সরাসরি সংগৃহীত। মোম সহ বিশুদ্ধ।',price:900,icon:'🍯',badge:'প্রিমিয়াম',btype:'',cat:'ful',bg:'#FFF8E1,#FFE082'}
+  {id:4,name:'মিশ্র ফুলের মধু',desc:'নানা ফুলের মিশ্রণ। সুষম পুষ্টিগুণ সম্পন্ন।',price:500,icon:'🌺',badge:'সাশ্রয়ী',btype:'',cat:'mixed',bg:'#FCE4EC,#F3E5F5'},
+  {id:5,name:'বরই ফুলের মধু',desc:'শীতকালীন বরই ফুল থেকে সংগৃহীত। হালকা মিষ্টি ও সুগন্ধি।',price:600,icon:'🍇',badge:'নতুন',btype:'',cat:'special',bg:'#EDE7F6,#D1C4E9'},
+  {id:6,name:'প্রাকৃতিক চাকের মধু',desc:'মৌচাক থেকে সরাসরি সংগৃহীত। মোম সহ বিশুদ্ধ।',price:900,icon:'🍯',badge:'প্রিমিয়াম',btype:'',cat:'ful',bg:'#FFF8E1,#FFE082'},
+  {id:7,name:'খলিশা ফুলের মধু',desc:'সুন্দরবনের দুর্লভ খলিশা ফুল থেকে সংগৃহীত। ৬ পিস মধুর চাক সহ।',price:1200,icon:'🐝',badge:'সুন্দরবন বিশেষ',btype:'',cat:'special',bg:'#E8F5E9,#C8E6C9'}
 ];
 var SB_DEFAULTS=[
-  {id:'sb1',name:'সুন্দরবন প্রিমিয়াম',desc:'খাঁটি সুন্দরী ফুলের মধু। গাঢ় রঙ, শক্তিশালী স্বাদ।',price:850,icon:'🍯'},
-  {id:'sb3',name:'সুন্দরবন গিফট প্যাক',desc:'৬ ধরনের মধু মিলিয়ে বিশেষ অফার প্যাকেজ। সুন্দরবনের সেরা মধুর সমাহার।',price:3500,icon:'🎁'}
+  {id:'sb1',name:'সুন্দরবন প্রিমিয়াম',desc:'খাঁটি সুন্দরী ফুলের মধু। গাঢ় রঙ, শক্তিশালী স্বাদ।',price:999,icon:'🍯'},
+  {id:'sb2',name:'সুন্দরবন গিফট প্যাক',desc:'৬ ধরনের মধু মিলিয়ে বিশেষ অফার প্যাকেজ। সুন্দরবনের সেরা মধুর সমাহার।',price:3500,icon:'🎁'}
 ];
 var DEFAULT_REVIEWS=[
   {name:'রাহেলা বেগম',loc:'ঢাকা',stars:5,text:'সুন্দরবনের মধু সত্যিই অসাধারণ! পরিবার খুব পছন্দ করেছে।',ts:0},
@@ -743,12 +754,11 @@ var HONEY_IMGS={
   '🌿':'https://image2url.com/r2/default/images/1773341476138-6976713d-1e67-4224-aaa4-8708b433bbb9.png',
   '🍈':'https://image2url.com/r2/default/images/1773341596633-66f14011-4ffc-4014-b551-bd4051b96343.jpg',
   '🌳':'https://images.unsplash.com/photo-1471943038574-2d8a80c9a1f0?w=400&q=80',
-  '🌺':'https://images.unsplash.com/photo-1601063476271-a159c71ab0b3?w=400&q=80',
-  '🍯':'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
-  '🎁':'https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=400&q=80',
-  '🍇':'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
-  '🐝':'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80',
-  '_d':'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80'
+  '🌺':'https://image2url.com/r2/default/images/1773345746219-b2d6dea1-9be0-49c3-9400-b383ad86b4ed.jpg',
+  '🍯':'https://image2url.com/r2/default/images/1773345452951-4d97a503-c432-452f-9525-19ba4bf83d52.jpg',
+  '🎁':'https://image2url.com/r2/default/images/1773345565906-b6ad7767-de3c-44f9-82a1-b9222d03fb74.jpg',
+  '🍇':'https://image2url.com/r2/default/images/1773345599940-7809dafc-f4f1-4edc-867d-38b3efa1f4ba.jpg',
+  '🐝':'https://image2url.com/r2/default/images/1773345673232-2085dc2c-e9ff-43d3-a208-59dd23ef57c9.jpg'
 };
 function getHoneyImg(e){ return HONEY_IMGS[e]||HONEY_IMGS['_d']; }
 function renderProducts(filter){
@@ -763,7 +773,7 @@ function renderProducts(filter){
     var badge=p.badge?'<div class="prod-badge '+(p.btype||'')+'">'+p.badge+'</div>':'';
     html+='<div class="prod-card" style="animation-delay:'+(i*.07)+'s">'
       +badge
-      +'<div class="prod-img"><img src="'+getHoneyImg(p.icon)+'" alt="'+p.name+'" style="width:100%;height:100%;object-fit:cover;display:block"/></div>'
+      +'<div class="prod-img"><img src="'+getHoneyImg(p.icon)+'" alt="'+p.name+'" style="width:100%;height:200px;object-fit:cover;display:block"/></div>'
       +'<div class="prod-body"><h3>'+p.name+'</h3><p>'+p.desc+'</p>'
       +'<div class="prod-bottom">'
       +'<div class="prod-price">৳'+Number(p.price).toLocaleString()+' <span>/কেজি</span></div>'
@@ -780,7 +790,7 @@ function renderSB(){
   for(var i=0;i<prods.length;i++){
     var p=prods[i];
     html+='<div class="sb-card" style="animation-delay:'+(i*.08)+'s">'
-      +'<div class="sb-img"><img src="'+getHoneyImg(p.icon)+'" alt="'+p.name+'" style="width:100%;height:100%;object-fit:cover;display:block"/></div>'
+      +'<div class="sb-img"><img src="'+getHoneyImg(p.icon)+'" alt="'+p.name+'" style="width:100%;height:200px;object-fit:cover;display:block"/></div>'
       +'<h4>'+p.name+'</h4><p>'+p.desc+'</p>'
       +'<div class="sb-price">৳ '+Number(p.price).toLocaleString()+'</div>'
       +'<div class="sb-btns">'
@@ -1531,7 +1541,7 @@ function applyWebSettings(){
   var addr=document.getElementById('dynAddress');if(addr)addr.textContent=ws('address','সাতক্ষীরা, বাংলাদেশ');
   var hrs=document.getElementById('dynHours');if(hrs)hrs.textContent=ws('hours','সকাল ৯টা – রাত ১০টা');
   // Copyright
-  var cp=document.getElementById('dynCopyright');if(cp)cp.textContent=ws('copyright','© ২০২৫ মধুবন | সাতক্ষীরা, বাংলাদেশ | সর্বস্বত্ব সংরক্ষিত');
+  var cp=document.getElementById('dynCopyright');if(cp)cp.textContent=ws('copyright','© ২০২৬ মধুবন | সাতক্ষীরা, বাংলাদেশ | সর্বস্বত্ব সংরক্ষিত');
 }
 
 // ══════════════════════════════════════
